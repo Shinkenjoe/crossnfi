@@ -1,0 +1,892 @@
+@prefix : <https://www.easi.uni-bayreuth.de/crossnfi#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix geo: <http://www.opengis.net/ont/geosparql#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix qudt: <http://qudt.org/schema/qudt/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@base <https://www.easi.uni-bayreuth.de/crossnfi#> .
+
+<https://www.easi.uni-bayreuth.de/crossnfi> rdf:type owl:Ontology ;
+                                             owl:versionIRI :_0.1 ;
+                                             dcterms:description "An ontology to enable ODBA access for national forest inventories (NFI)"@en ;
+                                             rdfs:label "crossnfi ontology 0.1"@en .
+
+#################################################################
+#    Annotation properties
+#################################################################
+
+###  http://purl.org/dc/terms/description
+dcterms:description rdf:type owl:AnnotationProperty .
+
+
+###  http://www.w3.org/2004/02/skos/core#altLabel
+skos:altLabel rdf:type owl:AnnotationProperty .
+
+
+###  http://www.w3.org/2004/02/skos/core#broader
+skos:broader rdf:type owl:AnnotationProperty .
+
+
+###  http://www.w3.org/2004/02/skos/core#closeMatch
+skos:closeMatch rdf:type owl:AnnotationProperty .
+
+
+###  http://www.w3.org/2004/02/skos/core#definition
+skos:definition rdf:type owl:AnnotationProperty .
+
+
+###  http://www.w3.org/2004/02/skos/core#note
+skos:note rdf:type owl:AnnotationProperty .
+
+
+###  http://www.w3.org/2004/02/skos/core#prefLabel
+skos:prefLabel rdf:type owl:AnnotationProperty .
+
+
+#################################################################
+#    Object Properties
+#################################################################
+
+###  http://www.opengis.net/ont/geosparql#sfContains
+geo:sfContains rdf:type owl:ObjectProperty ;
+               owl:inverseOf geo:sfWithin ;
+               skos:note "2d-spatial parthood (location) in the sense of Keet, 2025, Ontology Engineering"@en .
+
+
+###  http://www.opengis.net/ont/geosparql#sfWithin
+geo:sfWithin rdf:type owl:ObjectProperty ;
+             skos:note "2d-spatial parthood (location) in the sense of Keet, 2025, Ontology Engineering"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#assignedByArea
+:assignedByArea rdf:type owl:ObjectProperty ;
+                rdfs:subPropertyOf :assignedToStratum ;
+                owl:inverseOf :containsPlotByArea ;
+                rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                skos:note "The plot gets assigned to the stratum by the map subarea it is contained in being assigned to the stratum area corresponding to this stratum"@en ;
+                skos:prefLabel "asignado por área"@es ,
+                               "assigned by area"@en ,
+                               "zugewiesen durch Fläche"@de .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#assignedByCondition
+:assignedByCondition rdf:type owl:ObjectProperty ;
+                     rdfs:subPropertyOf :assignedToStratum ;
+                     owl:inverseOf :containsPlotByCondition ;
+                     rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                     skos:note "the plot is assigned to the stratum by the entities it desrcibes satisfying the conditions of the stratum"@en ;
+                     skos:prefLabel "asignado por condición"@es ,
+                                    "assigned by condition"@en ,
+                                    "zugewiesen durch Bedingung"@de .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#assignedToStratum
+:assignedToStratum rdf:type owl:ObjectProperty ;
+                   rdfs:subPropertyOf :isPartOf ;
+                   owl:inverseOf :hasPlotAssigned ;
+                   rdfs:domain :Stratum ;
+                   rdfs:range :Plot ;
+                   rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                   skos:prefLabel "asignado al estrato"@es ,
+                                  "assigned to stratum"@en ,
+                                  "zugewiesen zum Stratum"@de .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#collectedOnArea
+:collectedOnArea rdf:type owl:ObjectProperty ;
+                 rdfs:subPropertyOf owl:topObjectProperty ;
+                 owl:inverseOf :isPlaceForDataRecordingFor ;
+                 rdfs:domain :DataCollection ;
+                 rdfs:range :PlotArea ;
+                 rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                 skos:note """Domain: a sample or a collection of data like a national forest inventory, a cluster or a plot
+Range:  a plot area"""@en ;
+                 skos:prefLabel "aufgenommen auf"@de ,
+                                "fichado en"@es ,
+                                "recorded on"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#contains
+:contains rdf:type owl:ObjectProperty ;
+          skos:note "structural parthood in the sense of Keet, 2025 Ontology Engineering"@en ;
+          skos:prefLabel "contains"@en ,
+                         "contienes"@es ,
+                         "enhält"@de .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#containsPlotByArea
+:containsPlotByArea rdf:type owl:ObjectProperty ;
+                    rdfs:subPropertyOf :hasPlotAssigned ;
+                    skos:definition "contains a plot by the plot being located in a map subarea assigned to the stratum"@en ;
+                    skos:prefLabel "contains plot by area"@en ,
+                                   "contiene parcela por área"@es ,
+                                   "enthält Plot durch Fläche"@de .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#containsPlotByCondition
+:containsPlotByCondition rdf:type owl:ObjectProperty ;
+                         rdfs:subPropertyOf :hasPlotAssigned ;
+                         rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                         skos:note "a stratum contains a plot by the plot satisfying its conditions"@en ;
+                         skos:prefLabel "contains plot by condition"@en ,
+                                        "contiene parcela por condición"@es ,
+                                        "enthält Plot durch Bedingung"@de .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#describedByPlot
+:describedByPlot rdf:type owl:ObjectProperty ;
+                 rdfs:subPropertyOf :desrcibedBy ;
+                 owl:inverseOf :hasAsPlot ;
+                 rdfs:range :Plot ;
+                 skos:note """Domain: 
+entities for which there is data to be found at a plot. These entities are samples (of trees or other entitities), area and its terrain, forest community, forest processes
+
+Range: 
+Plot"""@en ;
+                 skos:prefLabel "beschriebenVonPlot"@de ,
+                                "describedByPlot"@en ,
+                                "describidoDeParcela"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#describes
+:describes rdf:type owl:ObjectProperty ;
+           rdfs:domain :DataCollection ;
+           skos:prefLabel "beschreibt"@de ,
+                          "describes"@en ,
+                          "describes"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#desrcibedBy
+:desrcibedBy rdf:type owl:ObjectProperty ;
+             rdfs:range :DataCollection ;
+             skos:prefLabel "beschrieben von"@de ,
+                            "described by"@en ,
+                            "describido de"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#hasAsPlot
+:hasAsPlot rdf:type owl:ObjectProperty ;
+           rdfs:subPropertyOf :describes ;
+           rdfs:domain :Plot ;
+           skos:note """Domain: 
+Plot
+
+Range: 
+entities for which there is data to be found at a plot. These entities are samples (of trees or other entitities), area and its terrain, forest community, forest processes"""@en ;
+           skos:prefLabel "beschreibtAlsPlot"@de ,
+                          "describesAsPlot"@en ,
+                          "describesComoParcela"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#hasPlotAssigned
+:hasPlotAssigned rdf:type owl:ObjectProperty ;
+                 rdfs:subPropertyOf :contains ;
+                 rdfs:domain :Stratum ;
+                 rdfs:range :Plot ;
+                 rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                 skos:prefLabel "has plot assigned"@en ,
+                                "hat Plot zugewiesen"@de ,
+                                "tiene plot asignado"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#isPartOf
+:isPartOf rdf:type owl:ObjectProperty ;
+          rdfs:subPropertyOf owl:topObjectProperty ;
+          skos:note "structural parthood in the sense of Keet, 2025, Ontology Engineering"@en ;
+          skos:prefLabel "es parte de"@es ,
+                         "is part of"@en ,
+                         "ist Teil von"@de .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#isPlaceForDataRecordingFor
+:isPlaceForDataRecordingFor rdf:type owl:ObjectProperty ;
+                            rdfs:subPropertyOf owl:topObjectProperty ;
+                            rdfs:domain :PlotArea ;
+                            rdfs:range :DataCollection ;
+                            rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                            skos:note """Domain: plot area
+Range: a sample or data collections like a national forest inventory, a cluster or a plot"""@en ;
+                            skos:prefLabel "es lugar de registro de datos de"@es ,
+                                           "is place of data recording for"@en ,
+                                           "ist Ort der Datenaufnahme von"@de .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#isStageFor
+:isStageFor rdf:type owl:ObjectProperty ;
+            owl:inverseOf :takesPlaceIn ;
+            rdfs:domain :Region ;
+            rdfs:range :Process ;
+            rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+            skos:prefLabel "es escenarío de"@es ,
+                           "is stage for"@en ,
+                           "ist Bühne für"@de .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#takesPlaceIn
+:takesPlaceIn rdf:type owl:ObjectProperty ;
+              rdfs:domain :Process ;
+              rdfs:range :Region ;
+              rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+              skos:prefLabel "findet statt in"@de ,
+                             "ocurres en"@es ,
+                             "takes place in"@en .
+
+
+#################################################################
+#    Data properties
+#################################################################
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#inYear
+:inYear rdf:type owl:DatatypeProperty ;
+        rdfs:range xsd:integer ;
+        skos:note """relates time indexed entities to a year,
+
+For Forest Inventories this is either the year of the cutoff date (BWI, IFN) or the year most of the measurements took place (FIA). Other time indexed entities inherit their time index by the Forest Inventory they are related to.
+
+The datatype is `xsd:integer` because OWL does not use `xsd:gYear` and `xsd:datetime` is too cumbersome"""@en ;
+        skos:prefLabel "en el año"@es ,
+                       "im Jahr"@de ,
+                       "in year"@en .
+
+
+#################################################################
+#    Classes
+#################################################################
+
+###  http://qudt.org/schema/qudt/Quantity
+qudt:Quantity rdf:type owl:Class ;
+              rdfs:subClassOf :Quality ;
+              dcterms:description """<p>A <b>Quantity</b> is the measurement of an observable property of a particular object, event, or physical system. 
+  A quantity is always associated with the context of measurement (i.e. the thing measured, the measured value, the accuracy of measurement, etc.) whereas the 
+  underlying <b>quantity kind</b> is independent of any particular measurement. Thus, length is a quantity kind while the height of a rocket is a specific 
+  quantity of length; its magnitude that may be expressed in meters, feet, inches, etc. Examples of physical quantities include physical constants, such as 
+  the speed of light in a vacuum, Planck's constant, the electric permittivity of free space, and the fine structure constant. </p>
+<p>In other words, quantities are quantifiable aspects of the world, such as the duration of a movie, the distance between two points, 
+velocity of a car, the pressure of the atmosphere, and a person's weight; and units are used to describe their numerical measure.</p> 
+<p>Many <b>quantity kinds</b> are related to each other by various physical laws, and as a result, the associated units of some quantity 
+kinds can be expressed as products (or ratios) of powers of other quantity kinds (e.g., momentum is mass times velocity and velocity is defined as distance 
+divided by time). In this way, some quantities can be calculated from other measured quantities using their associations to the quantity kinds in these 
+expressions. These quantity kind relationships are also discussed in dimensional analysis. Those that cannot be so expressed can be regarded 
+as \"fundamental\" in this sense.</p>
+<p>A quantity is distinguished from a \"quantity kind\" in that the former carries a value and the latter is a type specifier.
+</p>"""@en ;
+              rdfs:isDefinedBy <http://qudt.org/3.5.0/schema/shacl/qudt> ;
+              rdfs:label "Quantity"@en ,
+                         "Quantität"@de ,
+                         "cantidad"@es ;
+              skos:definition "A quality that refers to a numerical value by a subproperty of `qudt:value` and its metadata like physical units by `qudt:hasUnit`"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#AbioticProcess
+:AbioticProcess rdf:type owl:Class ;
+                rdfs:subClassOf :Process ;
+                rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                skos:definition "a process where the main actor is abiotic, most often a metereoloical force or condition that is deviating from the normal condition or force."@en ,
+                                "proceso abiótico"@es ;
+                skos:prefLabel "abiotic process"@es ,
+                               "abiotischer Prozess"@de .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#Area
+:Area rdf:type owl:Class ;
+      rdfs:subClassOf qudt:Quantity ;
+      rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ,
+                       "Area is the measure of a region's size on a surface."@en ;
+      skos:note "In colloquial speach area can also have the same meaning as region. In the compound terms like 'forest area' and similar it has this meaning and these terms are established.  A compound term like 'forest region' would imply a different meaning in colloquial language than intended"@en ,
+                "instances are related to by 'qudt:hasQuantityKind'  to `qudt:Area`"@en ;
+      skos:prefLabel "Fläche"@de ,
+                     "area"@en ,
+                     "área"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#BioticProcess
+:BioticProcess rdf:type owl:Class ;
+               rdfs:subClassOf :Process ;
+               rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+               skos:definition "forest process in which the main actors are animals"@en ;
+               skos:note "The main actors would for example be insects in an insect gradation or deer in browsing"@en ;
+               skos:prefLabel "biotic process"@en ,
+                              "biotischer Prozess"@de ,
+                              "proceso biótico"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#BroadleavedTree
+:BroadleavedTree rdf:type owl:Class ;
+                 rdfs:subClassOf :Tree ;
+                 rdfs:isDefinedBy "Wikipedia" ;
+                 rdfs:label "Laubbaum"@de ,
+                            "broadleaved tree"@en ;
+                 skos:definition "A broad-leaved tree is any tree within the diverse botanical group of angiosperms that has flat leaves and produces seeds inside of fruits."@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#Classification
+:Classification rdf:type owl:Class ;
+                rdfs:subClassOf :Quality ;
+                dcterms:description """The classification is  dependent on some quality not directly measured, but assesed 
+by the inventory team. Thus a classification can be interpreted as a quality for which the value space has been partitioned into several subsets of the correspondent value
+space. The classification then notes in which subset the entity falls. As the classification fixes its own \"datatype\",  there is no need for metadata, so for the sake of conciseness the enitity is directly related to the classification instance.
+
+A concrete classification is a subclass of  this class. The different subsets of the values space are modeled as instances and singleton subclasses of the classification class. This allows for grouping  several subclasses. 
+
+An entity is related to a classification instance by a subproperty of the  the object property  `is_classified_as`.  The inverse property is called `is_classification_of`"""@en ;
+                rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                rdfs:label "Klassifizierung"@de ;
+                skos:definition <https://www.easi.uni-bayreuth.de/crossnfi> ,
+                                "A classification of an entity is a partition of some superclass into subclasses, which is not modeled as DL Concepts (OWL classes) but as a quality having the subclasses as a discrete value space."@en ;
+                skos:prefLabel "clasificación"@es ,
+                               "classification"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#Cluster
+:Cluster rdf:type owl:Class ;
+         rdfs:subClassOf :DataCollection ,
+                         [ rdf:type owl:Restriction ;
+                           owl:onProperty :contains ;
+                           owl:someValuesFrom :Plot
+                         ] ,
+                         [ rdf:type owl:Restriction ;
+                           owl:onProperty :isPartOf ;
+                           owl:someValuesFrom :NationalForestInventory
+                         ] ;
+         rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+         skos:altLabel "Trakt (BWI)"@de ,
+                       "Plot (FIA)" ;
+         skos:definition """set of plots which are located in the same neighbourhood, often arranged in a 
+certain pattern."""@en ;
+         skos:prefLabel "Cluster"@de ,
+                        "acopiamiento"@es ,
+                        "cluster"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#Conifer
+:Conifer rdf:type owl:Class ;
+         rdfs:subClassOf :Tree ;
+         rdfs:isDefinedBy "Wikipedia, crossnfi"@en ;
+         rdfs:label "Nadelbaum"@de ,
+                    "conifer"@en ;
+         skos:definition "Conifers are primarily perennial, woody trees, mostly evergreen and mostly with needle shaped leaves,  having a regular branching pattern, reproducing with male and female cones, usually on the same tree."@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#DBH
+:DBH rdf:type owl:Class ;
+     rdfs:subClassOf qudt:Quantity ;
+     rdfs:isDefinedBy "Tomppo E et al 2010, National Forest Inventories: Pathways for Common Reporting, Appendix" ;
+     skos:definition "The breast height of a tree is located at 1.3 m from the base point of the axis of the stem."@en ;
+     skos:note """An instance is related by `qudt:hasQuantityKind` to `qudt:Length`
+
+Tomppo et al base point: On level terrain the base point is the point resulting from the intersection  of the stem axis and the ground surface. On sloped terrain and on inclined trees the identification of the base point requires the previous identification of an  an intersection point. This intersection point is the highest point on the cross sectional  area that results from the intersection of the ground surface with the stem. A line through the intersection point and perpendicular to the stem axis yields the base point in these  cases. 
+
+FIA definition:  The diameter of a tree bole/stem (trunk) measured at breast height (4.5 feet = 1.37 m) above ground, measured outside the bark. The point of diameter measurement may vary for abnormally  formed trees."""@en ;
+     skos:prefLabel "Brusthöhendurchmesser"@de ,
+                    "diameter at breast height"@en ,
+                    "diámetro a la altura de pecho"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#DataCollection
+:DataCollection rdf:type owl:Class ;
+                rdfs:subClassOf [ rdf:type owl:Restriction ;
+                                  owl:onProperty :inYear ;
+                                  owl:someValuesFrom xsd:integer
+                                ] ;
+                rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                skos:broader "bfo : generally dependent continuant (31)"@en ;
+                skos:definition "a collection of data"@en ;
+                skos:prefLabel "Datensammlung"@de ,
+                               "colleción de datos"@es ,
+                               "data collection"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#ForestArea
+:ForestArea rdf:type owl:Class ;
+            rdfs:subClassOf :TotalArea ,
+                            [ rdf:type owl:Restriction ;
+                              owl:onProperty geo:sfWithin ;
+                              owl:someValuesFrom :InventoryArea
+                            ] ;
+            rdfs:isDefinedBy "FAO  Forest Resource Assement - Terms and Definitions"@en ;
+            rdfs:seeAlso <https://www.fao.org/forest-resources-assessment/en/> ;
+            skos:definition "Land spanning more than 0.5 hectares with trees higher than 5 meters and a canopy cover of more than 10 percent, or trees able to reach these thresholds in situ. It does not include land that is predominantly under agricultural or urban land use."@en ;
+            skos:prefLabel "Waldfläche"@de ,
+                           "area de bosque"@es ,
+                           "forest area"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#ForestCommunity
+:ForestCommunity rdf:type owl:Class ;
+                 rdfs:subClassOf [ rdf:type owl:Restriction ;
+                                   owl:onProperty geo:sfWithin ;
+                                   owl:someValuesFrom :Region
+                                 ] ,
+                                 [ rdf:type owl:Restriction ;
+                                   owl:onProperty :inYear ;
+                                   owl:someValuesFrom xsd:integer
+                                 ] ;
+                 rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                 skos:broader "bfo : object aggregate (27)"@en ;
+                 skos:definition "community of plants and animals living in a forest community, including their remains, defined by the area on which they are located."@en ;
+                 skos:prefLabel "Wald-Lebensgemeinschaft"@de ,
+                                "comunidad forestal"@es ,
+                                "forest community"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#Herb
+:Herb rdf:type owl:Class ;
+      rdfs:subClassOf :Plant ;
+      rdfs:isDefinedBy "Wikipedia"@en ;
+      skos:prefLabel "herbaceous plant"@en ,
+                     "hierba"@es ,
+                     "krautige Pflanze"@de .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#HumanActivity
+:HumanActivity rdf:type owl:Class ;
+               rdfs:subClassOf :Process ;
+               rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+               skos:definition "a process where the main actors are human"@en ;
+               skos:prefLabel "actuación humana"@es ,
+                              "human activity"@en ,
+                              "menschliche Aktitvität"@de .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#InventoryArea
+:InventoryArea rdf:type owl:Class ;
+               rdfs:subClassOf :TotalArea ;
+               skos:definition "part of the earth surface in which a National Forest Inventory is applied. Most often coincides with the countrie's state area."@en ;
+               skos:prefLabel "Inventurgebiet"@de ,
+                              "inventory area"@en ,
+                              "área de inventario"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#MapSubarea
+:MapSubarea rdf:type owl:Class ;
+            rdfs:subClassOf :TotalArea ;
+            rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+            skos:definition "a subarea delineated in a map, most often a polygon or multipolygon. It has an area."@en ,
+                            "subárea de una mapa"@es ;
+            skos:prefLabel "Karten-Unterfläche"@de ,
+                           "map subarea"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#NationalForestInventory
+:NationalForestInventory rdf:type owl:Class ;
+                         rdfs:subClassOf :DataCollection ,
+                                         [ rdf:type owl:Restriction ;
+                                           owl:onProperty :collectedOnArea ;
+                                           owl:someValuesFrom :InventoryArea
+                                         ] ,
+                                         [ rdf:type owl:Restriction ;
+                                           owl:onProperty :contains ;
+                                           owl:someValuesFrom :Plot
+                                         ] ;
+                         rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                         skos:broader "bfo : generally dependent continuant (31)"@en ;
+                         skos:definition "A collection of data and metadata of measurements in forests which are collected in a  a National Forest Inventory Project."@en ;
+                         skos:prefLabel "National Forest Inventory"@en ,
+                                        "Nationale Forstinventur"@de ,
+                                        "inventario forestal nacional"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#NonForestArea
+:NonForestArea rdf:type owl:Class ;
+               rdfs:subClassOf :TotalArea ,
+                               [ rdf:type owl:Restriction ;
+                                 owl:onProperty geo:sfWithin ;
+                                 owl:someValuesFrom :InventoryArea
+                               ] ;
+               skos:definition "area in an inventory area that is not forest area"@en ;
+               skos:prefLabel "Nichtwaldfläche"@de ,
+                              "non forest area"@en ,
+                              "área de no bosque"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#NonForestPlotSubarea
+:NonForestPlotSubarea rdf:type owl:Class ;
+                      rdfs:subClassOf :PlotInventoryArea ;
+                      skos:definition "a plot subarea which is not located in forest area"@en ;
+                      skos:prefLabel "Nichtwald-Plotunterfläche"@de ,
+                                     "non forest plot subarea"@en ,
+                                     "subárea de parcela de no bosque"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#NonInventoryArea
+:NonInventoryArea rdf:type owl:Class ;
+                  rdfs:subClassOf :TotalArea ;
+                  rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                  skos:prefLabel "Nichtinventurgebiet"@de ,
+                                 "non-inventory area"@en ,
+                                 "part of the earth surface which is not inventory area for a certain NFI"@en ,
+                                 "área de non-inventario"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#Plant
+:Plant rdf:type owl:Class ;
+       rdfs:isDefinedBy "Wikipedia"@en ;
+       skos:broader "bfo : object (30)" ;
+       skos:definition "Plants are the eukaryotic organisms that constitute the kingdom Plantae."@en ;
+       skos:prefLabel "Pflanze"@de ,
+                      "plant"@en ,
+                      "planta"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#Plot
+:Plot rdf:type owl:Class ;
+      rdfs:subClassOf :DataCollection ,
+                      [ rdf:type owl:Restriction ;
+                        owl:onProperty :isPartOf ;
+                        owl:someValuesFrom :NationalForestInventory
+                      ] ;
+      dcterms:description "The entities that a plot refers to usually are the plot area and the terrain it encompasses, the forest community, human activities taking place on the plot terrain, samples of trees and  deadwood taken on the plot area."@en ;
+      rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+      skos:altLabel "Traktecke (BWI)"@de ,
+                    "subplot (FIA)"@en ;
+      skos:definition "A collection of data recorded in a National Forest Inventory of entities that are located in the neighbourhood of a reference location. Refers to this location by `hasCentralPoint`"@en ;
+      skos:prefLabel "Plot"@de ,
+                     "parcela"@es ,
+                     "plot"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#PlotAbioticProcess
+:PlotAbioticProcess rdf:type owl:Class ;
+                    rdfs:subClassOf :AbioticProcess ,
+                                    [ rdf:type owl:Restriction ;
+                                      owl:onProperty :takesPlaceIn ;
+                                      owl:someValuesFrom :PlotInventoryArea
+                                    ] ;
+                    rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                    skos:definition "abiotic process which takes place in a plot subarea"@en ;
+                    skos:prefLabel "abiotic process on a plot subarea"@en ,
+                                   "abiotischer Prozess auf einer Plotunterfläche"@de ,
+                                   "proceso abiótico en a subárea de parcela"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#PlotArea
+:PlotArea rdf:type owl:Class ;
+          rdfs:subClassOf :Region ;
+          dcterms:description "In the population-sample pattern applied for areas this is a sample."@en ;
+          rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+          skos:broader "bfo : two-dimensional spatial region (9)"@en ;
+          skos:definition "The part of the earth surface that is used for classifications and measurements belonging to a plot of a National Forest Inventory"@en ;
+          skos:prefLabel "Plotfläche"@de ,
+                         "plot area"@en ,
+                         "área de  parcela"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#PlotBioticProcess
+:PlotBioticProcess rdf:type owl:Class ;
+                   rdfs:subClassOf :BioticProcess ,
+                                   [ rdf:type owl:Restriction ;
+                                     owl:onProperty :takesPlaceIn ;
+                                     owl:someValuesFrom :PlotInventoryArea
+                                   ] ;
+                   rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                   skos:definition "biotic process taking place on a inventory plot subarea"@en ;
+                   skos:prefLabel "biotic process on a plot subarea"@en ,
+                                  "biotischer Prozess auf einer Plotunterfläche"@de ,
+                                  "proceso biótico en una subárea de parcela"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#PlotDensityArea
+:PlotDensityArea rdf:type owl:Class ;
+                 rdfs:subClassOf :TotalArea ,
+                                 [ rdf:type owl:Restriction ;
+                                   owl:onProperty geo:sfWithin ;
+                                   owl:someValuesFrom :InventoryArea
+                                 ] ;
+                 skos:definition "An area where plots or clusters are spatially arranged by an algorithm resulting in a certain density of plots and clusters."@en ;
+                 skos:note "a set of areas with uniform plot entities partitions an inventory area"@en ;
+                 skos:prefLabel "Gebiet mit einheitlicher Stichprobendichte"@de ,
+                                "area of uniform plot density"@en ,
+                                "área de densidad de parcela uniforma"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#PlotForestArea
+:PlotForestArea rdf:type owl:Class ;
+                rdfs:subClassOf :PlotInventoryArea ,
+                                [ rdf:type owl:Restriction ;
+                                  owl:onProperty geo:sfWithin ;
+                                  owl:someValuesFrom :ForestArea
+                                ] ;
+                skos:definition "plot area which is situated in a forest area"@en ;
+                skos:prefLabel "Wald-Plotunterfläche"@de ,
+                               "forest plot subarea"@en ,
+                               "área de parcela en bosque"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#PlotForestCommunity
+:PlotForestCommunity rdf:type owl:Class ;
+                     rdfs:subClassOf :ForestCommunity ,
+                                     [ rdf:type owl:Restriction ;
+                                       owl:onProperty geo:sfWithin ;
+                                       owl:someValuesFrom :PlotForestArea
+                                     ] ;
+                     skos:definition "the community of plants and animals found on  a forest plot subarea"@en ;
+                     skos:prefLabel "Wald-Lebensgemeinschaft einer Plotunterfläche"@de ,
+                                    "comunidad forestal de un subárea de parcela"@es ,
+                                    "forest commmunity of a subplot area"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#PlotGreaterArea
+:PlotGreaterArea rdf:type owl:Class ;
+                 rdfs:subClassOf :PlotArea ;
+                 dcterms:description """This class is intended not to be populated with instances. 
+
+Any plot subarea is contained in a single plot greater area, which will not be found in 
+the data and is kept here just for conceptually clarity. 
+
+For some classifications or even measurements a wider area then the dilineated one is used, eg for classifying the macroterrain one needs to consider an area that is well beyond any defined limits. Else how could one differentiate between upper slope and lower slope.  For some classifications a concrete area is given, eg the BWI states that forest type has to be assesed in a 25m radius around the plot central point. 
+
+When these classifications are taken from entities found in the greater plot area, they are copied over to the plot subareas. That is each contained plot subarea or entity related to one of the subplot areas gets classified. 
+
+As an example take the above assesment of  forest type in BWI where there are 2 stands delineated.  The  classification is on the Forest Community, which is located in the plot greater area and thus in both plot-subareas. Thus each plot subarea refers to the same forest type entity and its classification, but the properties are settled in the plot subareas. There is not an instance of the plot greater area, so it cannot be refered to."""@en ;
+                 rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                 skos:definition "Area around the plot that is not delineated, but still used for assessing classifications."@en ;
+                 skos:prefLabel "erweiterte Plotfläche"@de ,
+                                "plot greater area"@en ,
+                                "área ampliada de parcela"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#PlotHumanActivity
+:PlotHumanActivity rdf:type owl:Class ;
+                   rdfs:subClassOf :HumanActivity ,
+                                   [ rdf:type owl:Restriction ;
+                                     owl:onProperty :takesPlaceIn ;
+                                     owl:someValuesFrom :PlotInventoryArea
+                                   ] ;
+                   rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                   skos:definition "human activity that takes place on an inventory plot subarea"@en ;
+                   skos:prefLabel "actividad humana en una subárea de parcela"@es ,
+                                  "human activity on a plot subarea"@en ,
+                                  "menschliche Aktivität auf einer Plotunterfläche"@de .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#PlotInventoryArea
+:PlotInventoryArea rdf:type owl:Class ;
+                   rdfs:subClassOf :PlotSubArea ,
+                                   [ rdf:type owl:Restriction ;
+                                     owl:onProperty geo:sfWithin ;
+                                     owl:someValuesFrom :InventoryArea
+                                   ] ,
+                                   [ rdf:type owl:Restriction ;
+                                     owl:onProperty geo:sfWithin ;
+                                     owl:someValuesFrom :PlotDensityArea
+                                   ] ;
+                   rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                   skos:definition "plot subarea that is contained in an inventory area"@en ;
+                   skos:note "Since the Inventory Area is partitioned into areas of uniform plot density, every inventory plot subarae must also be in a  area of uniform plot denisity"@en ;
+                   skos:prefLabel "Inventur-Plotunterfläche"@de ,
+                                  "inventory plot subarea"@en ,
+                                  "área de parcela de inventario"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#PlotNonInventoryArea
+:PlotNonInventoryArea rdf:type owl:Class ;
+                      rdfs:subClassOf :PlotSubArea ,
+                                      [ rdf:type owl:Restriction ;
+                                        owl:onProperty geo:sfWithin ;
+                                        owl:someValuesFrom :NonInventoryArea
+                                      ] ;
+                      skos:definition "plot subarea that either is not in an inventory area, or which is in a different area of uniform plot density than  the rest of its cluster and thus not registered"@en ;
+                      skos:prefLabel "Nichtinventur-Plotunterfläche"@de ,
+                                     "area de parcela de noninventario"@es ,
+                                     "non-inventory plot subarea"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#PlotSubArea
+:PlotSubArea rdf:type owl:Class ;
+             rdfs:subClassOf :PlotArea ,
+                             [ rdf:type owl:Restriction ;
+                               owl:onProperty :describedByPlot ;
+                               owl:someValuesFrom :Plot
+                             ] ;
+             rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+             skos:altLabel "condition class (FIA)"@en ;
+             skos:definition "A part of the plot greater area for which boundaries are established to other parts and which is differentiated from these other parts by criteria specific to the National Forest Inventory, most often at least based on a Forest / Nonforest distinction."@en ;
+             skos:note """Classifications of Terrain, Area, Forest Community and Human Activity are spatially applied at this level, which means either the area directly or an entity located in it is classified. 
+
+Classifications which are true for all the plot area this plot subarea is part of are repeated for every plot subarea of the parent plot area. 
+
+Classifications of terrain and legal status are applied directly to the area with their 
+different ontological entities being short-circuited into this class for the sake of brevity. 
+
+Possible boundaries are refered to by `geo:hasGeometry`
+
+If a National Forest Inventory divides a plot greater area into subareas that have a finer type system than crossnfi, then different plot subareas of same crossnfi-class are created, with differing classifications in the differentiation quality. Eg FIA divides its condition classes also along owner group, while crossnfi only knows Forest and Non-Forest. Thus the plot will have several subplot areas of type Forest, which have differing owner group classifications.
+
+FIA is the only NFI of the three which constructs these expliicitly. IFN (Inventario Forestal Nacional) moves the plot if sample areas would fall into Non-Forest or a land use different to the land use of the plot central point and thus avoids the problem. BWI notes boundaries between Forest and Non-Forest and Stands, but uses these boundaries for a mirroring algorithm for its angle count sample, so that the non-forest subplot areas are included into the forest inventory only implicitly by  extending the measurements by fictious entities creating an imaginary world without the forest or stand border."""@en ;
+             skos:prefLabel "Plotunterfläche"@de ,
+                            "plot subarea"@en ,
+                            "subarea de parcela"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#Process
+:Process rdf:type owl:Class ;
+         rdfs:subClassOf [ rdf:type owl:Restriction ;
+                           owl:onProperty :takesPlaceIn ;
+                           owl:someValuesFrom :Region
+                         ] ;
+         rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+         skos:broader "bfo : process (15)"@en ;
+         skos:definition "a process is an entity unfolding in time, taking place in an area and affecting the entities on it"@en ;
+         skos:prefLabel "Prozess"@de ,
+                        "proceso"@es ,
+                        "process"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#Quality
+:Quality rdf:type owl:Class ;
+         rdfs:subClassOf [ rdf:type owl:Restriction ;
+                           owl:onProperty :inYear ;
+                           owl:someValuesFrom xsd:integer
+                         ] ;
+         rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+         skos:broader "bfo : specifically dependent continuant (20)"@en ;
+         skos:closeMatch "bfo : quality (19)"@en ;
+         skos:definition "A combination of a quality inherent in a continuant and its value either as a measurement or a categorization"@en ;
+         skos:prefLabel "Qualität"@de ,
+                        "calidad"@es ,
+                        "quality"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#Region
+:Region rdf:type owl:Class ;
+        rdfs:subClassOf [ rdf:type owl:Restriction ;
+                          owl:onProperty :desrcibedBy ;
+                          owl:someValuesFrom :NationalForestInventory
+                        ] ,
+                        [ rdf:type owl:Restriction ;
+                          owl:onProperty :inYear ;
+                          owl:someValuesFrom xsd:integer
+                        ] ;
+        rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+        skos:closeMatch "bfo : two-dimensional spatial region (9)"@en ;
+        skos:definition "part of the earth surface interpreted as 2-d"@en ;
+        skos:note "In colloquial speech area can also have the same meaning as region. In the compound terms like 'forest area' and similar it has this meaning and these terms are established.  A compound term like 'forest region' would imply a different meaning in colloquial language than intended"@en ;
+        skos:prefLabel "Gebiet"@de ,
+                       "region"@en ,
+                       "región"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#Sample
+:Sample rdf:type owl:Class ;
+        rdfs:subClassOf [ rdf:type owl:Restriction ;
+                          owl:onProperty :collectedOnArea ;
+                          owl:someValuesFrom :SampleArea
+                        ] ,
+                        [ rdf:type owl:Restriction ;
+                          owl:onProperty :describedByPlot ;
+                          owl:someValuesFrom :Plot
+                        ] ,
+                        [ rdf:type owl:Restriction ;
+                          owl:onProperty :isPartOf ;
+                          owl:someValuesFrom :PlotForestCommunity
+                        ] ,
+                        [ rdf:type owl:Restriction ;
+                          owl:onProperty :inYear ;
+                          owl:someValuesFrom xsd:integer
+                        ] ;
+        rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+        skos:broader <https://www.easi.uni-bayreuth.de/crossnfi> ,
+                     "bfo : object aggregate (27)"@en ;
+        skos:definition "A collection of entities which is chosen for measurements or data recordings. It is  a subset of a larger collection of entities (population)."@en ;
+        skos:prefLabel "Probe"@de ,
+                       "muestra"@es ,
+                       "sample"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#SampleArea
+:SampleArea rdf:type owl:Class ;
+            rdfs:subClassOf :PlotArea ;
+            rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+            skos:altLabel "subplot area (FIA)"@en ;
+            skos:definition "A part of a plot subarea on which the entities are located which a sample uses for measurements or data recordings."@en ;
+            skos:prefLabel "Probefläche"@de ,
+                           "sample area"@en ,
+                           "área de muestra"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#SampleOfTreesOfMinDiameter
+:SampleOfTreesOfMinDiameter rdf:type owl:Class ;
+                            rdfs:subClassOf :Sample ;
+                            skos:prefLabel "Probe von Bäumen über dem Mindestdurchmesser"@de ,
+                                           "muestra de árboles encima del diámetro minimal"@es ,
+                                           "sample of trees of minimum diameter"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#Shrub
+:Shrub rdf:type owl:Class ;
+       rdfs:subClassOf :Plant ;
+       rdfs:isDefinedBy "FAO  Forest Resource Assement - Terms and Definitions"@en ;
+       rdfs:seeAlso <https://www.fao.org/forest-resources-assessment/en/> ;
+       skos:definition "Woody perennial plant, generally more than 0.5 meters and less than 5 meters in height at maturity and without a single main stem and definite crown"@en ;
+       skos:note "arbusto"@es ;
+       skos:prefLabel "Strauch"@de ,
+                      "shrub"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#Stratum
+:Stratum rdf:type owl:Class ;
+         rdfs:subClassOf :DataCollection ;
+         rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+         skos:definition "a collection of plots whose majority desrcibe entities satisfiyng certain conditions stated by this stratum"@en ;
+         skos:note """A plot  'satisfies' a stratum, by the conditions stated by the stratum holding for the entities the plot desrcibes
+
+An NFI can choose to assign plots to  strata in 2 ways: 
+
+1. A plot is  'assigned by condition' if it satisfies the stratum's conditions. 
+2. A plot is 'assigned by arae' if the plot is in a map subarea which gets assigned to the stratum area corresponding to this stratum. Usually this assignation takes place by evaluating which stratum the majority of plots located in a subarea satisfy."""@en ;
+         skos:prefLabel "Stratum"@de ,
+                        "estrato"@es ,
+                        "stratum"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#StratumArea
+:StratumArea rdf:type owl:Class ;
+             rdfs:subClassOf :TotalArea ;
+             rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+             skos:definition "part of a forest area for which the entities like forest community, terrain, etc in most cases satisfy the conditions stated by a stratum"@en ;
+             skos:prefLabel "Stratumsfläche"@de ,
+                            "stratum area"@en ,
+                            "área de estrato"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#TotalArea
+:TotalArea rdf:type owl:Class ;
+           rdfs:subClassOf :Region ;
+           dcterms:description "In the population-sample pattern applied on areas this is a population"@en ;
+           rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+           skos:definition "A part of the earth surface for which a Forest Inventory wants to make statetments"@en ;
+           skos:prefLabel "Gesamtfläche"@de ,
+                          "total area"@en ,
+                          "área total"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#Tree
+:Tree rdf:type owl:Class ;
+      rdfs:subClassOf :Plant ;
+      rdfs:isDefinedBy "FAO  Forest Resource Assement - Terms and Definitions"@en ;
+      rdfs:seeAlso <https://www.fao.org/forest-resources-assessment/en/> ;
+      skos:definition "A woody perennial with a single main stem, or in the case of coppice with several stems, having a more or less definite crown."@en ;
+      skos:note "árbol"@es ;
+      skos:prefLabel "Baum"@de ,
+                     "tree"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#TreeHeight
+:TreeHeight rdf:type owl:Class ;
+            rdfs:subClassOf qudt:Quantity ;
+            rdfs:isDefinedBy "Tomppo E et al 2010, National Forest Inventories: Pathways for Common Reporting, Appendix" ;
+            skos:definition "The height of a tree is the vertical distance between the base point and the highest point of the tree"@en ;
+            skos:note """An instance is related by `qudt:hasQuantityKind` to `qudt:Length`
+
+Tomppo et al base point: On level terrain the base point is the point resulting from the intersection  of the stem axis and the ground surface. On sloped terrain and on inclined trees the identification of the base point requires the previous identification of an  an intersection point. This intersection point is the highest point on the cross sectional  area that results from the intersection of the ground surface with the stem. A line through the intersection point and perpendicular to the stem axis yields the base point in these  cases."""@en ;
+            skos:prefLabel "Baumhöhe"@de ,
+                           "altura de árbol"@es ,
+                           "tree height"@en .
+
+
+###  Generated by the OWL API (version 4.5.29.2024-05-13T12:11:03Z) https://github.com/owlcs/owlapi
