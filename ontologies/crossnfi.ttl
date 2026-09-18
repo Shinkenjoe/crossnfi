@@ -8,11 +8,12 @@
 @prefix qudt: <http://qudt.org/schema/qudt/> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix unit: <http://qudt.org/vocab/unit/> .
 @prefix dcterms: <http://purl.org/dc/terms/> .
-@base <https://www.easi.uni-bayreuth.de/crossnfi#> .
+@base <https://www.easi.uni-bayreuth.de/crossnfi> .
 
 <https://www.easi.uni-bayreuth.de/crossnfi> rdf:type owl:Ontology ;
-                                             owl:versionIRI :_0.1 ;
+                                             owl:versionIRI <https://www.easi.uni-bayreuth.de/crossnfi_0.1> ;
                                              dcterms:description "An ontology to enable ODBA access for national forest inventories (NFI)"@en ;
                                              rdfs:label "crossnfi ontology 0.1"@en .
 
@@ -45,7 +46,18 @@ skos:note rdf:type owl:AnnotationProperty .
 
 
 ###  http://www.w3.org/2004/02/skos/core#prefLabel
-skos:prefLabel rdf:type owl:AnnotationProperty .
+skos:prefLabel rdf:type owl:AnnotationProperty ;
+               rdfs:subPropertyOf rdfs:label .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#def
+:def rdf:type owl:AnnotationProperty ;
+     rdfs:label "def"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#pref
+:pref rdf:type owl:AnnotationProperty ;
+      rdfs:label "pref"@en .
 
 
 #################################################################
@@ -113,6 +125,7 @@ Range:  a plot area"""@en ;
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#contains
 :contains rdf:type owl:ObjectProperty ;
+          rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
           skos:note "structural parthood in the sense of Keet, 2025 Ontology Engineering"@en ;
           skos:prefLabel "contains"@en ,
                          "contienes"@es ,
@@ -122,7 +135,8 @@ Range:  a plot area"""@en ;
 ###  https://www.easi.uni-bayreuth.de/crossnfi#containsPlotByArea
 :containsPlotByArea rdf:type owl:ObjectProperty ;
                     rdfs:subPropertyOf :hasPlotAssigned ;
-                    skos:definition "contains a plot by the plot being located in a map subarea assigned to the stratum"@en ;
+                    rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                    skos:definition "the stratum contains a plot by the plot being located in a map subarea assigned to the stratum"@en ;
                     skos:prefLabel "contains plot by area"@en ,
                                    "contiene parcela por área"@es ,
                                    "enthält Plot durch Fläche"@de .
@@ -132,7 +146,7 @@ Range:  a plot area"""@en ;
 :containsPlotByCondition rdf:type owl:ObjectProperty ;
                          rdfs:subPropertyOf :hasPlotAssigned ;
                          rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
-                         skos:note "a stratum contains a plot by the plot satisfying its conditions"@en ;
+                         skos:note "the stratum contains a plot by the plot satisfying its conditions"@en ;
                          skos:prefLabel "contains plot by condition"@en ,
                                         "contiene parcela por condición"@es ,
                                         "enthält Plot durch Bedingung"@de .
@@ -143,6 +157,7 @@ Range:  a plot area"""@en ;
                  rdfs:subPropertyOf :desrcibedBy ;
                  owl:inverseOf :hasAsPlot ;
                  rdfs:range :Plot ;
+                 rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
                  skos:note """Domain: 
 entities for which there is data to be found at a plot. These entities are samples (of trees or other entitities), area and its terrain, forest community, forest processes
 
@@ -156,6 +171,8 @@ Plot"""@en ;
 ###  https://www.easi.uni-bayreuth.de/crossnfi#describes
 :describes rdf:type owl:ObjectProperty ;
            rdfs:domain :DataCollection ;
+           rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+           skos:definition "a data  collection like a Plot describes an entity if it has data about it"@en ;
            skos:prefLabel "beschreibt"@de ,
                           "describes"@en ,
                           "describes"@es .
@@ -164,6 +181,8 @@ Plot"""@en ;
 ###  https://www.easi.uni-bayreuth.de/crossnfi#desrcibedBy
 :desrcibedBy rdf:type owl:ObjectProperty ;
              rdfs:range :DataCollection ;
+             rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+             skos:definition "an enitiy is described by a ddata collection if the latter has data about the former"@en ;
              skos:prefLabel "beschrieben von"@de ,
                             "described by"@en ,
                             "describido de"@es .
@@ -183,15 +202,139 @@ entities for which there is data to be found at a plot. These entities are sampl
                           "describesComoParcela"@es .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#hasAspect
+:hasAspect rdf:type owl:ObjectProperty ;
+           rdfs:subPropertyOf :hasQuality ;
+           rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+           skos:definition "relates a plot subarea to its aspect"@en ;
+           skos:prefLabel "has aspect"@en ,
+                          "hat Exposition"@de ,
+                          "tiene orientación"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#hasAzimuth
+:hasAzimuth rdf:type owl:ObjectProperty ;
+            rdfs:subPropertyOf :hasQuality ;
+            rdfs:range :Azimuth ;
+            rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+            skos:definition "relates a spatial entitiy to its azimuth in s planar coordinate system"@en ;
+            skos:prefLabel "has azimuth"@en ,
+                           "hat Azimuth"@de ,
+                           "tiene azimuth"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#hasCount
+:hasCount rdf:type owl:ObjectProperty ;
+          rdfs:subPropertyOf :hasQuality ;
+          rdfs:domain :AngleCountSample ;
+          rdfs:range :AngleCount ;
+          rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+          skos:definition "relates an angle count sample to one of its angle counts"@en ;
+          skos:prefLabel "has count"@en ,
+                         "hat Anzahl"@de ,
+                         "tiene conteo"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#hasDBH
+:hasDBH rdf:type owl:ObjectProperty ;
+        rdfs:subPropertyOf :hasQuality ;
+        rdfs:domain :Tree ;
+        rdfs:range :DBH ;
+        rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+        skos:definition "relates a tree with its diameter at breast height"@en ;
+        skos:prefLabel "has DBH"@en ,
+                       "hat BHD"@de ,
+                       "tiene DAP"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#hasDistance
+:hasDistance rdf:type owl:ObjectProperty ;
+             rdfs:subPropertyOf :hasQuality ;
+             rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+             skos:note "relates a spatial entity to its distance in a planar coordinate system"@en ;
+             skos:prefLabel "has distance"@en ,
+                            "hat Enternung"@de ,
+                            "tiene distancia"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#hasHeight
+:hasHeight rdf:type owl:ObjectProperty ;
+           rdfs:subPropertyOf :hasQuality ;
+           rdfs:domain :Tree ;
+           rdfs:range :TreeHeight ;
+           rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+           skos:definition "relatzes a tree to its height"@en ;
+           skos:prefLabel "hasHeight"@en ,
+                          "hat Höhe"@de ,
+                          "tiene altura"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#hasMinDBH
+:hasMinDBH rdf:type owl:ObjectProperty ;
+           rdfs:subPropertyOf :hasQuality ;
+           rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+           skos:definition "relates a sample of Trees above"@en ;
+           skos:prefLabel "has minimum DBH"@en ,
+                          "hat Mindest-BHD"@de ,
+                          "tiene DAP  mínima"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#hasOwnerGroup
+:hasOwnerGroup rdf:type owl:ObjectProperty ;
+               rdfs:subPropertyOf :isClassifiedAs ;
+               rdfs:domain :PlotSubArea ;
+               rdfs:range :OwnerGroup ;
+               rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+               skos:definition "relates a plot subabrea to its owner group classification"@en ;
+               skos:prefLabel "has owner group"@en ,
+                              "hat Eigentümergruppe"@de ,
+                              "tiene grupo de propietario"@es .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#hasPlotAssigned
 :hasPlotAssigned rdf:type owl:ObjectProperty ;
                  rdfs:subPropertyOf :contains ;
                  rdfs:domain :Stratum ;
                  rdfs:range :Plot ;
                  rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                 skos:definition "relates a stratum to one of its plots"^^xsd:string ;
                  skos:prefLabel "has plot assigned"@en ,
                                 "hat Plot zugewiesen"@de ,
                                 "tiene plot asignado"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#hasQuality
+:hasQuality rdf:type owl:ObjectProperty ;
+            rdfs:subPropertyOf owl:topObjectProperty ;
+            rdfs:range :Quality ;
+            rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+            skos:definition "relates an entity to one of its qualities"@en ;
+            skos:prefLabel "has quality"@en ,
+                           "hat Qualität"@de ,
+                           "tiene calidad"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#hasSlope
+:hasSlope rdf:type owl:ObjectProperty ;
+          rdfs:subPropertyOf :hasQuality ;
+          rdfs:domain :PlotSubArea ;
+          rdfs:range :Slope ;
+          rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+          skos:definition "relates a plot subarea (terrain) to its slope"^^xsd:string ;
+          skos:prefLabel "has slope"@en ,
+                         "hat Neigung"@de ,
+                         "tiene pendiente"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#isClassifiedAs
+:isClassifiedAs rdf:type owl:ObjectProperty ;
+                rdfs:subPropertyOf :hasQuality ;
+                rdfs:range :Classification ;
+                rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                skos:definition "connects  an entity to one of its classifications"@en ;
+                skos:prefLabel "es clasificado como"@es ,
+                               "is classified as"@en ,
+                               "ist klassifiziert als"@de .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#isPartOf
@@ -227,6 +370,19 @@ Range: a sample or data collections like a national forest inventory, a cluster 
                            "ist Bühne für"@de .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#satisfiesStratum
+:satisfiesStratum rdf:type owl:ObjectProperty ;
+                  rdfs:subPropertyOf owl:topObjectProperty ;
+                  rdfs:domain :Plot ;
+                  rdfs:range :Stratum ;
+                  rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                  skos:definition "a plot satisfies the condition set by a stratum"@en ;
+                  skos:note "a plot can satisfy a stratum's conditions but still be assigned to a different stratum if the assigation happens by map polygons"@en ;
+                  skos:prefLabel "erfüllt Stratum"@de ,
+                                 "satisface estrato"@es ,
+                                 "satisfies stratum"@en .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#takesPlaceIn
 :takesPlaceIn rdf:type owl:ObjectProperty ;
               rdfs:domain :Process ;
@@ -260,7 +416,6 @@ The datatype is `xsd:integer` because OWL does not use `xsd:gYear` and `xsd:date
 
 ###  http://qudt.org/schema/qudt/Quantity
 qudt:Quantity rdf:type owl:Class ;
-              rdfs:subClassOf :Quality ;
               dcterms:description """<p>A <b>Quantity</b> is the measurement of an observable property of a particular object, event, or physical system. 
   A quantity is always associated with the context of measurement (i.e. the thing measured, the measured value, the accuracy of measurement, etc.) whereas the 
   underlying <b>quantity kind</b> is independent of any particular measurement. Thus, length is a quantity kind while the height of a rocket is a specific 
@@ -274,12 +429,7 @@ divided by time). In this way, some quantities can be calculated from other meas
 expressions. These quantity kind relationships are also discussed in dimensional analysis. Those that cannot be so expressed can be regarded 
 as \"fundamental\" in this sense.</p>
 <p>A quantity is distinguished from a \"quantity kind\" in that the former carries a value and the latter is a type specifier.
-</p>"""@en ;
-              rdfs:isDefinedBy <http://qudt.org/3.5.0/schema/shacl/qudt> ;
-              rdfs:label "Quantity"@en ,
-                         "Quantität"@de ,
-                         "cantidad"@es ;
-              skos:definition "A quality that refers to a numerical value by a subproperty of `qudt:value` and its metadata like physical units by `qudt:hasUnit`"@en .
+</p>""" .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#AbioticProcess
@@ -292,16 +442,114 @@ as \"fundamental\" in this sense.</p>
                                "abiotischer Prozess"@de .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#AngleCount
+:AngleCount rdf:type owl:Class ;
+            rdfs:subClassOf :Quantity ;
+            skos:definition "number of trees counted in an angle count sample"@de ;
+            skos:note """Instances are related by ´qudt:hasUnit' to a ´qudt:Unit´, which ´qudt:hasQuantityKind´ ´quantitkind:Count´. This usually is ´unit:COUNT´
+
+Thes counts usually are diiferentiated by tree spescies to which this quantity realtes to by the property  ´ofSpecies´ 
+
+TODO: It would be better to integrate the count of a certain basal area factor as unit in QUDT."""@en ;
+            skos:prefLabel "Winkelanzahl"@de ,
+                           "angle count"@en ,
+                           "conteo angular relascópico"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#AngleCountOfBasalAreaFactor1m2
+:AngleCountOfBasalAreaFactor1m2 rdf:type owl:Class ;
+                                rdfs:subClassOf :AngleCount ;
+                                rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                                rdfs:label "angle count of basal area factor 1 m²"@en ;
+                                skos:definition "number of trees counted in an angle count sample of basal area factor 1 m²"@en ;
+                                skos:note """Instances are related by ´qudt:hasUnit' to a ´qudt:Unit´, which ´qudt:hasQuantityKind´ ´quantitkind:Count´. This usually is ´unit:COUNT´
+
+Thes counts usually are diiferentiated by tree spescies to which this quantity realtes to by the property  ´ofSpecies´ 
+
+TODO: It would be better to integrate the count of a certain basal area factor as unit in QUDT."""@en ;
+                                skos:prefLabel "Winkelanzahl mit Zählfaktor 4 m²"@de ,
+                                               "conteo angular relascópico de factor de proporcionalidad de 4 m²"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#AngleCountOfBasalAreaFactor2m2
+:AngleCountOfBasalAreaFactor2m2 rdf:type owl:Class ;
+                                rdfs:subClassOf :AngleCount ;
+                                rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                                skos:definition "number of trees counted in an angle count sample of basal area factor 4 m²"@en ;
+                                skos:note """Instances are related by ´qudt:hasUnit' to a ´qudt:Unit´, which ´qudt:hasQuantityKind´ ´quantitkind:Count´. This usually is ´unit:COUNT´
+
+Thes counts usually are diiferentiated by tree spescies to which this quantity realtes to by the property  ´ofSpecies´ 
+
+TODO: It would be better to integrate the count of a certain basal area factor as unit in QUDT."""@en ;
+                                skos:prefLabel "Winkelanzahl mit Zählfaktor 4 m²"@de ,
+                                               "angle count of basal area factor 2 m²"@en ,
+                                               "conteo angular relascópico de factor de proporcionalidad de 4 m²"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#AngleCountOfBasalAreaFactor4m2
+:AngleCountOfBasalAreaFactor4m2 rdf:type owl:Class ;
+                                rdfs:subClassOf :AngleCount ;
+                                rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                                rdfs:label "angle count of basal area factor 4 m²"@en ;
+                                skos:definition "number of trees counted in an angle count sample of basal area factor 4 m²"@en ;
+                                skos:note """Instances are related by ´qudt:hasUnit' to a ´qudt:Unit´, which ´qudt:hasQuantityKind´ ´quantitkind:Count´. This usually is ´unit:COUNT´
+
+Thes counts usually are diiferentiated by tree spescies to which this quantity realtes to by the property  ´ofSpecies´ 
+
+TODO: It would be better to integrate the count of a certain basal area factor as unit in QUDT."""@en ;
+                                skos:prefLabel "Winkelanzahl mit Zählfaktor 4 m²"@de ,
+                                               "conteo angular relascópico de factor de proporcionalidad de 4 m²"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#AngleCountSample
+:AngleCountSample rdf:type owl:Class ;
+                  rdfs:subClassOf :SampleOfTreesOfMinDiameter ;
+                  rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                  skos:definition "A set of trees that is assigned to a central point by satisfying a certain diameter-distance requiremement. An Angle Count Sample is attributed by a basal area factor (BAF). A tree belongs to the Angle Count Sample, if and only if the relation of its diameter at breast height (in cm)  to its distance to the central point (in m) surpasses a minimum relation constant,  which corresponds to the basal area factor (eg. BAF 4 m² has the relation of ¹/₂₅)"@en ;
+                  skos:note """Often the trees in the sample are not rerred to individually but just counted, most often distuished by species. A count is refered to by the property 'cnfi:hasCount' and notes the corresponding species. For some angle count samples though the individual trees are recorded.
+
+The count of trees in an angle count sample is in a statistical relationship with the basal area of a fixed sample circle with the same central point and is thus used as an approximation to the basal area. The counting factor corresponds to the base area in m² added by a single tree falling into the angle count sample. The counting factors of 1 m², 2 m² and 4 m² are common.
+
+Forest and Stand borders in the sample tree's and/or central point's vicinity are used for the reflection computation. This is a computational procedure, which reflects the sample tree's base areas on the aforementioned borders. Would the diameter of such a reflected tree  in combination with the refleæction's distance to the central point sufficeto fall into the ideal sample circle, then the preimage tree is counted twice in the sample."""@en ;
+                  skos:prefLabel "Winkelzählprobe"@de ,
+                                 "angle count sample"@en ,
+                                 "muestra angular relascópica"@es .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#Area
 :Area rdf:type owl:Class ;
-      rdfs:subClassOf qudt:Quantity ;
-      rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ,
-                       "Area is the measure of a region's size on a surface."@en ;
+      rdfs:subClassOf :Quantity ;
+      rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+      skos:definition "Area is the measure of a region's size on a surface."@en ;
       skos:note "In colloquial speach area can also have the same meaning as region. In the compound terms like 'forest area' and similar it has this meaning and these terms are established.  A compound term like 'forest region' would imply a different meaning in colloquial language than intended"@en ,
-                "instances are related to by 'qudt:hasQuantityKind'  to `qudt:Area`"@en ;
+                "instances are related by ´qudt:hasUnit' to a ´qudt:Unit´, which ´qudt:hasQuantityKind´ ´qudt:Area´.  Usually this is  ´unit:HA´ or ´unit:AC´."@en ;
       skos:prefLabel "Fläche"@de ,
                      "area"@en ,
                      "área"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#Aspect
+:Aspect rdf:type owl:Class ;
+        rdfs:subClassOf :Quantity ;
+        rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+        rdfs:seeAlso <https://en.wikipedia.org/wiki/Aspect_(geography)> ;
+        skos:definition "the azimuth that a terrain surface faces"@en ;
+        skos:note "Instances are related by ´qudt:hasUnit' to a ´qudt:Unit´, which ´qudt:hasQuantityKind´ ´qudt:Angle´. This usually is ´unit:DEG´ or ´unit:GON´"@en ;
+        skos:prefLabel "Exposition"@de ,
+                       "aspect"@en ,
+                       "orientación"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#Azimuth
+:Azimuth rdf:type owl:Class ;
+         rdfs:subClassOf :Quantity ;
+         rdfs:isDefinedBy "Wikipedia"^^xsd:string ;
+         skos:altLabel "rumbo"@es ;
+         skos:definition "The horizontal angle from the north cardinal direction in a local or observer-centric spherical coordinate system."@en ;
+         skos:note "instances are related by ´qudt:hasUnit' to a ´qudt:Unit´, which ´qudt:hasQuantityKind´ ´qudt:Angle´. This usually is ´unit:DEG´ or ´unit:GON´"^^xsd:string ;
+         skos:prefLabel "Azimuth"@de ,
+                        "acimut"@es ,
+                        "azimuth"@en .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#BioticProcess
@@ -354,8 +602,8 @@ An entity is related to a classification instance by a subproperty of the  the o
                            owl:someValuesFrom :NationalForestInventory
                          ] ;
          rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
-         skos:altLabel "Trakt (BWI)"@de ,
-                       "Plot (FIA)" ;
+         skos:altLabel "Plot (FIA)" ,
+                       "Trakt (BWI)"@de ;
          skos:definition """set of plots which are located in the same neighbourhood, often arranged in a 
 certain pattern."""@en ;
          skos:prefLabel "Cluster"@de ,
@@ -374,17 +622,31 @@ certain pattern."""@en ;
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#DBH
 :DBH rdf:type owl:Class ;
-     rdfs:subClassOf qudt:Quantity ;
-     rdfs:isDefinedBy "Tomppo E et al 2010, National Forest Inventories: Pathways for Common Reporting, Appendix" ;
+     rdfs:subClassOf :Quantity ;
+     rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+     rdfs:seeAlso "Tomppo E et al 2010, National Forest Inventories: Pathways for Common Reporting, Appendix" ;
      skos:definition "The breast height of a tree is located at 1.3 m from the base point of the axis of the stem."@en ;
-     skos:note """An instance is related by `qudt:hasQuantityKind` to `qudt:Length`
+     skos:note """Instances are related by ´qudt:hasUnit' to a ´qudt:Unit´, which ´qudt:hasQuantityKind´ ´qudt:Length´. This usually is ´unit:M´, ´unit:CM´, ´unit:FT´, ´unit:YD´ or ´unit:IN´. 
 
-Tomppo et al base point: On level terrain the base point is the point resulting from the intersection  of the stem axis and the ground surface. On sloped terrain and on inclined trees the identification of the base point requires the previous identification of an  an intersection point. This intersection point is the highest point on the cross sectional  area that results from the intersection of the ground surface with the stem. A line through the intersection point and perpendicular to the stem axis yields the base point in these  cases. 
+Tomppo et al base point: On level terrain the base point is the point resulting from the intersection  of the stem axis and the ground surface. On sloped terrain and on inclined trees the identification of the base point requires the previous identification of an  an intersection point. This intersection point is the highest point on the cross sectional  area that results from the intersection of the ground surface with the stem. A line through the intersection point and perpendicular to the stem axis yields the base point in these  cases."""^^xsd:string ;
+     skos:prefLabel "Brusthöhendurchmesser (BHD)"@de ,
+                    "diameter at breast height (DBH)"@en ,
+                    "diámetro a la altura de pecho (DAP)"@es .
 
-FIA definition:  The diameter of a tree bole/stem (trunk) measured at breast height (4.5 feet = 1.37 m) above ground, measured outside the bark. The point of diameter measurement may vary for abnormally  formed trees."""@en ;
-     skos:prefLabel "Brusthöhendurchmesser"@de ,
-                    "diameter at breast height"@en ,
-                    "diámetro a la altura de pecho"@es .
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#DRC
+:DRC rdf:type owl:Class ;
+     rdfs:subClassOf :Quantity ;
+     rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+     rdfs:seeAlso "USDA Forest Service, 2023, Forest Inventory and Analysis Glossary"^^xsd:string ;
+     skos:definition "The diameter of a tree stem(s) measured at root collar or at the point nearest the ground line (whichever is higher) that represents the basal area of the tree, measured outside the bark."@en ;
+     skos:note """Instances are related by ´qudt:hasUnit' to a ´qudt:Unit´, which ´qudt:hasQuantityKind´ ´qudt:Length´. This usually is ´unit:M´, ´unit:CM´, ´unit:FT´, ´unit:YD´ or ´unit:IN´. 
+
+FIA:
+For multi-stemmed trees, d.r.c. is calculated from an equation that incorporates the individual stem diameter measurements. The point of diameter measurement may vary for woodland trees with stems that are abnormally formed. With the exception of seedlings, woodland stems qualifying for measurement must be at least 1.0 inch in diameter or larger and at least 1.0 foot in length"""@en ;
+     skos:prefLabel "Wurzelhalsdurchmesser"@en ,
+                    "diameter at root collar"@en ,
+                    "diámetro del cuello del raíz"@es .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#DataCollection
@@ -401,6 +663,24 @@ FIA definition:  The diameter of a tree bole/stem (trunk) measured at breast hei
                                "data collection"@en .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#Distance
+:Distance rdf:type owl:Class ;
+          rdfs:subClassOf :Quantity ;
+          rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+          rdfs:seeAlso <https://en.wikipedia.org/wiki/Distance> ;
+          skos:definition "The length of a straight line between two points"@en ;
+          skos:note "instances are related by ´qudt:hasUnit' to a ´qudt:Unit´, which ´qudt:hasQuantityKind´ ´qudt:Length´. This usually is ´unit:M´, ´unit:CM´, ´unit:FT´, ´unit:YD´ or ´unit:IN´."^^xsd:string ;
+          skos:prefLabel "Entfernung"@de ,
+                         "distance"@en ,
+                         "distancia"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#FixedCircleSample
+:FixedCircleSample rdf:type owl:Class ;
+                   rdfs:subClassOf :SampleOfTreesOfMinDiameter ;
+                   rdfs:label "FixedCircleSample"@en .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#ForestArea
 :ForestArea rdf:type owl:Class ;
             rdfs:subClassOf :TotalArea ,
@@ -408,7 +688,8 @@ FIA definition:  The diameter of a tree bole/stem (trunk) measured at breast hei
                               owl:onProperty geo:sfWithin ;
                               owl:someValuesFrom :InventoryArea
                             ] ;
-            rdfs:isDefinedBy "FAO  Forest Resource Assement - Terms and Definitions"@en ;
+            rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ,
+                             "FAO  Forest Resource Assement - Terms and Definitions"@en ;
             rdfs:seeAlso <https://www.fao.org/forest-resources-assessment/en/> ;
             skos:definition "Land spanning more than 0.5 hectares with trees higher than 5 meters and a canopy cover of more than 10 percent, or trees able to reach these thresholds in situ. It does not include land that is predominantly under agricultural or urban land use."@en ;
             skos:prefLabel "Waldfläche"@de ,
@@ -434,6 +715,13 @@ FIA definition:  The diameter of a tree bole/stem (trunk) measured at breast hei
                                 "forest community"@en .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#GrowthRegion
+:GrowthRegion rdf:type owl:Class ;
+              rdfs:subClassOf :TotalArea ;
+              skos:prefLabel "Wuchsgebiet"@de ,
+                             "growth region"@en .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#Herb
 :Herb rdf:type owl:Class ;
       rdfs:subClassOf :Plant ;
@@ -456,6 +744,7 @@ FIA definition:  The diameter of a tree bole/stem (trunk) measured at breast hei
 ###  https://www.easi.uni-bayreuth.de/crossnfi#InventoryArea
 :InventoryArea rdf:type owl:Class ;
                rdfs:subClassOf :TotalArea ;
+               rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
                skos:definition "part of the earth surface in which a National Forest Inventory is applied. Most often coincides with the countrie's state area."@en ;
                skos:prefLabel "Inventurgebiet"@de ,
                               "inventory area"@en ,
@@ -470,6 +759,75 @@ FIA definition:  The diameter of a tree bole/stem (trunk) measured at breast hei
                             "subárea de una mapa"@es ;
             skos:prefLabel "Karten-Unterfläche"@de ,
                            "map subarea"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#MunicipalOwner
+:MunicipalOwner rdf:type owl:Class ;
+                rdfs:subClassOf :OwnerGroup ;
+                rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                skos:definition "an area owned by a municipality"^^xsd:string ;
+                skos:prefLabel "kommunaler Eigentümer"@de ,
+                               "municipal owner"@en ,
+                               "propietario municipal"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#Municipality
+:Municipality rdf:type owl:Class ;
+              rdfs:subClassOf :TotalArea ;
+              rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+              rdfs:seeAlso <https://ec.europa.eu/eurostat/web/nuts/local-administrative-units> ;
+              skos:definition "a administrative division of smallest level, often having corporate status and powers of self-government or jurisdiction"@en ;
+              skos:prefLabel "Kommune"@de ,
+                             "municipality"@en ,
+                             "municipio"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#NUTS1Region
+:NUTS1Region rdf:type owl:Class ;
+             rdfs:subClassOf :TotalArea ;
+             rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+             rdfs:seeAlso <https://ec.europa.eu/eurostat/web/nuts> ;
+             skos:altLabel "Region auf NUTS Ebene 1"@de ,
+                           "region of NUTS level 1"@en ;
+             skos:note """Nomenclature of territorial units for statistics (Nomenclature des Unités territoriales statistiques)
+
+US states  are often too large for the EU criteria and alternatively could be filed under NUTS level 0 pi
+Spains level 1 seem to be artificial groupings of level 2 autonomous communities"""@en ;
+             skos:prefLabel "Land"@de ,
+                            "major socio-economic regions"@en ,
+                            "región de nivel de NUTS de 1"@es ,
+                            "state"@en-us .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#NUTS2Region
+:NUTS2Region rdf:type owl:Class ;
+             rdfs:subClassOf :TotalArea ;
+             rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+             rdfs:seeAlso <https://ec.europa.eu/eurostat/web/nuts> ;
+             skos:altLabel "Region auf NUTS Level 2"@de ,
+                           "región de nivel de NUTS de 2"@es ;
+             skos:definition "basic regions (for regional policies)"@en ;
+             skos:note """Nomenclature of territorial units for statistics (Nomenclature des Unités territoriales statistiques)
+
+not existent in US, often identical with NUTS1 in Germany"""@en ;
+             skos:prefLabel "Bezirk"@de ,
+                            "comunidad autónoma"@en ,
+                            "region of NUTS level 2"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#NUTS3Region
+:NUTS3Region rdf:type owl:Class ;
+             rdfs:subClassOf :TotalArea ;
+             rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+             rdfs:seeAlso <https://ec.europa.eu/eurostat/web/nuts> ;
+             skos:altLabel "Region auf NUTS Level 2"@de ,
+                           "region of NUTS level 3"@en ,
+                           "región de nivel de NUTS de 2"@es ;
+             skos:definition "small regions (for specific diagnoses)"@de ;
+             skos:note "Nomenclature of territorial units for statistics (Nomenclature des Unités territoriales statistiques)"@en ;
+             skos:prefLabel "Kreis"@de ,
+                            "county"@en-us ,
+                            "provincia"@es .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#NationalForestInventory
@@ -498,6 +856,7 @@ FIA definition:  The diameter of a tree bole/stem (trunk) measured at breast hei
                                  owl:onProperty geo:sfWithin ;
                                  owl:someValuesFrom :InventoryArea
                                ] ;
+               rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
                skos:definition "area in an inventory area that is not forest area"@en ;
                skos:prefLabel "Nichtwaldfläche"@de ,
                               "non forest area"@en ,
@@ -521,6 +880,16 @@ FIA definition:  The diameter of a tree bole/stem (trunk) measured at breast hei
                                  "non-inventory area"@en ,
                                  "part of the earth surface which is not inventory area for a certain NFI"@en ,
                                  "área de non-inventario"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#OwnerGroup
+:OwnerGroup rdf:type owl:Class ;
+            rdfs:subClassOf :PlotAreaClassification ;
+            rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+            skos:definition "classification of a plot subarea by the nature oft its owner according to private or public law"^^xsd:string ;
+            skos:prefLabel "Eigentümergruppe"@de ,
+                           "grupo de propietario"@es ,
+                           "owner group"@en .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#Plant
@@ -576,6 +945,15 @@ FIA definition:  The diameter of a tree bole/stem (trunk) measured at breast hei
                          "área de  parcela"@es .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#PlotAreaClassification
+:PlotAreaClassification rdf:type owl:Class ;
+                        rdfs:subClassOf :Classification ;
+                        skos:definition "a classification where the classified entity is a subplot area or its associated terrain or legal status"^^xsd:string ;
+                        skos:prefLabel "Klassifikation einer Plotunterfläche"@de ,
+                                       "clasificación de una área de subparcela"@es ,
+                                       "classification of a plot subarea"@en .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#PlotBioticProcess
 :PlotBioticProcess rdf:type owl:Class ;
                    rdfs:subClassOf :BioticProcess ,
@@ -597,6 +975,7 @@ FIA definition:  The diameter of a tree bole/stem (trunk) measured at breast hei
                                    owl:onProperty geo:sfWithin ;
                                    owl:someValuesFrom :InventoryArea
                                  ] ;
+                 rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
                  skos:definition "An area where plots or clusters are spatially arranged by an algorithm resulting in a certain density of plots and clusters."@en ;
                  skos:note "a set of areas with uniform plot entities partitions an inventory area"@en ;
                  skos:prefLabel "Gebiet mit einheitlicher Stichprobendichte"@de ,
@@ -723,6 +1102,16 @@ FIA is the only NFI of the three which constructs these expliicitly. IFN (Invent
                             "subarea de parcela"@es .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#PrivateOwner
+:PrivateOwner rdf:type owl:Class ;
+              rdfs:subClassOf :OwnerGroup ;
+              rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+              skos:definition "an area owned by a private natural or legal person"@en ;
+              skos:prefLabel "private owner"@en ,
+                             "privater Eigentümer"@de ,
+                             "propietario privado"@es .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#Process
 :Process rdf:type owl:Class ;
          rdfs:subClassOf [ rdf:type owl:Restriction ;
@@ -750,6 +1139,18 @@ FIA is the only NFI of the three which constructs these expliicitly. IFN (Invent
          skos:prefLabel "Qualität"@de ,
                         "calidad"@es ,
                         "quality"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#Quantity
+:Quantity rdf:type owl:Class ;
+          rdfs:subClassOf qudt:Quantity ,
+                          :Quality ;
+          dcterms:description ""@en ;
+          rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+          skos:definition "A quality that refers to a numerical value by a subproperty of `qudt:value` and its metadata like physical units by `qudt:hasUnit`"@en ;
+          skos:prefLabel "Quantität"@de ,
+                         "cantidad"@es ,
+                         "quantity"@en .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#Region
@@ -809,9 +1210,17 @@ FIA is the only NFI of the three which constructs these expliicitly. IFN (Invent
                            "área de muestra"@es .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#SampleOfTreesBelowMinDiameter
+:SampleOfTreesBelowMinDiameter rdf:type owl:Class ;
+                               rdfs:subClassOf :Sample ;
+                               skos:prefLabel "Probe von Bäumen unter dem Mindestdurchmesser"^^xsd:string ,
+                                              "sample of trees below minimum diameter"@en .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#SampleOfTreesOfMinDiameter
 :SampleOfTreesOfMinDiameter rdf:type owl:Class ;
                             rdfs:subClassOf :Sample ;
+                            skos:definition "sample of trees, whose DBH surpasses a minimal requirement"@en ;
                             skos:prefLabel "Probe von Bäumen über dem Mindestdurchmesser"@de ,
                                            "muestra de árboles encima del diámetro minimal"@es ,
                                            "sample of trees of minimum diameter"@en .
@@ -826,6 +1235,27 @@ FIA is the only NFI of the three which constructs these expliicitly. IFN (Invent
        skos:note "arbusto"@es ;
        skos:prefLabel "Strauch"@de ,
                       "shrub"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#Slope
+:Slope rdf:type owl:Class ;
+       rdfs:subClassOf :Quantity ;
+       rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+       rdfs:seeAlso <https://en.wikipedia.org/wiki/Grade_(slope)> ;
+       skos:definition "elevation angle of a terrain surface to the horizontal"@en ;
+       skos:prefLabel "Neigung"@de ,
+                      "pendiente"@es ,
+                      "slope"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#StateOwner
+:StateOwner rdf:type owl:Class ;
+            rdfs:subClassOf :OwnerGroup ;
+            rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+            skos:definition "an area owned by the state"^^xsd:string ;
+            skos:prefLabel "propietario estatal"@es ,
+                           "staatlicher Eigentümer"@de ,
+                           "state owner"@en .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#Stratum
@@ -878,10 +1308,11 @@ An NFI can choose to assign plots to  strata in 2 ways:
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#TreeHeight
 :TreeHeight rdf:type owl:Class ;
-            rdfs:subClassOf qudt:Quantity ;
-            rdfs:isDefinedBy "Tomppo E et al 2010, National Forest Inventories: Pathways for Common Reporting, Appendix" ;
+            rdfs:subClassOf :Quantity ;
+            rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+            rdfs:seeAlso "Tomppo E et al 2010, National Forest Inventories: Pathways for Common Reporting, Appendix" ;
             skos:definition "The height of a tree is the vertical distance between the base point and the highest point of the tree"@en ;
-            skos:note """An instance is related by `qudt:hasQuantityKind` to `qudt:Length`
+            skos:note """instances are related by ´qudt:hasUnit' to a ´qudt:Unit´, which ´qudt:hasQuantityKind´ ´qudt:Length´. This usually is ´unit:M´, ´unit:CM´, ´unit:FT´, ´unit:YD´ or ´unit:IN´. 
 
 Tomppo et al base point: On level terrain the base point is the point resulting from the intersection  of the stem axis and the ground surface. On sloped terrain and on inclined trees the identification of the base point requires the previous identification of an  an intersection point. This intersection point is the highest point on the cross sectional  area that results from the intersection of the ground surface with the stem. A line through the intersection point and perpendicular to the stem axis yields the base point in these  cases."""@en ;
             skos:prefLabel "Baumhöhe"@de ,
@@ -889,4 +1320,44 @@ Tomppo et al base point: On level terrain the base point is the point resulting 
                            "tree height"@en .
 
 
-###  Generated by the OWL API (version 4.5.29.2024-05-13T12:11:03Z) https://github.com/owlcs/owlapi
+#################################################################
+#    Individuals
+#################################################################
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#municipalOwner
+:municipalOwner rdf:type owl:NamedIndividual ,
+                         :MunicipalOwner ;
+                rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                skos:definition "an area  owned by a municipality"^^xsd:string ;
+                skos:prefLabel "kommunaler Eigentümer"^^xsd:string ,
+                               "municipal owner"@en ,
+                               "propietario municipal"^^xsd:string .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#privateOwner
+:privateOwner rdf:type owl:NamedIndividual ,
+                       :PrivateOwner ;
+              skos:definition "an area owned by a private natural or legal person"^^xsd:string ;
+              skos:prefLabel "private owner"@en ,
+                             "privater Eigentümer"@de ,
+                             "propietario privado"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#stateOwner
+:stateOwner rdf:type owl:NamedIndividual ,
+                     :StateOwner ;
+            rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+            skos:definition "an are owned by the state"@en ;
+            skos:prefLabel "propietario estatal"@es ,
+                           "staatlicher Eignetümer"@de ,
+                           "state owner"@en .
+
+
+#################################################################
+#    Annotations
+#################################################################
+
+:PublicOwner skos:prefLabel "propietario estatal"^^xsd:string .
+
+
+###  Generated by the OWL API (version 4.5.13) https://github.com/owlcs/owlapi
