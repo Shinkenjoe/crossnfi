@@ -284,7 +284,7 @@ entities for which there is data to be found at a plot. These entities are sampl
 ###  https://www.easi.uni-bayreuth.de/crossnfi#hasLandUse
 :hasLandUse rdf:type owl:ObjectProperty ;
             rdfs:subPropertyOf :isClassifiedAs ;
-            rdfs:domain :NonForestPlotArea ;
+            rdfs:domain :NonForestPlotSubarea ;
             rdfs:range :LandUse ;
             rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
             skos:definition "relates a non-forest subplot area to the classification instance corresponding to its land use"@en ;
@@ -364,6 +364,16 @@ entities for which there is data to be found at a plot. These entities are sampl
                          "tiene pendiente"@es .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#hasStandSizeClass
+:hasStandSizeClass rdf:type owl:ObjectProperty ;
+                   rdfs:subPropertyOf :isClassifiedAs ;
+                   rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                   skos:definition "relates a forest community to ist classfication instance of stand size"@en ;
+                   skos:prefLabel "has stand size class"@en ,
+                                  "hat Dimensionsklasse"@en ,
+                                  "tiene estado de diámetro"@es .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#isClassifiedAs
 :isClassifiedAs rdf:type owl:ObjectProperty ;
                 rdfs:subPropertyOf :hasQuality ;
@@ -379,7 +389,7 @@ entities for which there is data to be found at a plot. These entities are sampl
 :isLandUseOf rdf:type owl:ObjectProperty ;
              rdfs:subPropertyOf :classifies ;
              rdfs:domain :LandUse ;
-             rdfs:range :NonForestPlotArea ;
+             rdfs:range :NonForestPlotSubarea ;
              rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
              skos:definition "relates a land use classification instance to a non-forest subplot area with a corresponding land use"@en ;
              skos:prefLabel "es uso del suelo de"@es ,
@@ -682,6 +692,10 @@ Forest and Stand borders in the sample tree's and/or central point's vicinity ar
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#Classification
 :Classification rdf:type owl:Class ;
+                owl:equivalentClass [ rdf:type owl:Restriction ;
+                                      owl:onProperty :classifies ;
+                                      owl:someValuesFrom owl:Thing
+                                    ] ;
                 rdfs:subClassOf :Quality ;
                 dcterms:description """The classification is  dependent on some quality not directly measured, but assesed 
 by the inventory team. Thus a classification can be interpreted as a quality for which the value space has been partitioned into several subsets of the correspondent value
@@ -810,6 +824,9 @@ For multi-stemmed trees, d.r.c. is calculated from an equation that incorporates
                              "FAO  Forest Resource Assement - Terms and Definitions"@en ;
             rdfs:seeAlso <https://www.fao.org/forest-resources-assessment/en/> ;
             skos:definition "Land spanning more than 0.5 hectares with trees higher than 5 meters and a canopy cover of more than 10 percent, or trees able to reach these thresholds in situ. It does not include land that is predominantly under agricultural or urban land use."@en ;
+            skos:note """US FIA also includes chapparal and pinyon-juniper formations, which are excluded by the international definition (and also in Spain). 
+
+German non-stocked forest area is excluded, although it would partly be included in the FAO definition."""@en ;
             skos:prefLabel "Waldfläche"@de ,
                            "area de bosque"@es ,
                            "forest area"@en .
@@ -827,27 +844,27 @@ For multi-stemmed trees, d.r.c. is calculated from an equation that incorporates
                                  ] ;
                  rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
                  skos:broader "bfo : object aggregate (27)"@en ;
-                 skos:definition "community of plants and animals living in a forest community, including their remains, defined by the area on which they are located."@en ;
+                 skos:definition "community of plants and animals living in a forest area, including their remains, defined by the area on which they are located."@en ;
                  skos:prefLabel "Wald-Lebensgemeinschaft"@de ,
                                 "comunidad forestal"@es ,
                                 "forest community"@en .
 
 
-###  https://www.easi.uni-bayreuth.de/crossnfi#ForestPlotArea
-:ForestPlotArea rdf:type owl:Class ;
-                rdfs:subClassOf :PlotSubArea ,
-                                [ rdf:type owl:Restriction ;
-                                  owl:onProperty geo:sfWithin ;
-                                  owl:someValuesFrom :ForestArea
-                                ] ,
-                                [ rdf:type owl:Restriction ;
-                                  owl:onProperty geo:sfWithin ;
-                                  owl:someValuesFrom :InventoryArea
-                                ] ;
-                skos:definition "plot area which is situated in a forest area"@en ;
-                skos:prefLabel "Wald-Plotunterfläche"@de ,
-                               "forest plot subarea"@en ,
-                               "área de parcela en bosque"@es .
+###  https://www.easi.uni-bayreuth.de/crossnfi#ForestPlotSubarea
+:ForestPlotSubarea rdf:type owl:Class ;
+                   rdfs:subClassOf :PlotSubArea ,
+                                   [ rdf:type owl:Restriction ;
+                                     owl:onProperty geo:sfWithin ;
+                                     owl:someValuesFrom :ForestArea
+                                   ] ,
+                                   [ rdf:type owl:Restriction ;
+                                     owl:onProperty geo:sfWithin ;
+                                     owl:someValuesFrom :InventoryArea
+                                   ] ;
+                   skos:definition "plot area which is situated in a forest area"@en ;
+                   skos:prefLabel "Wald-Plotteilfläche"@de ,
+                                  "forest plot subarea"@en ,
+                                  "área de parcela en bosque"@es .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#GrowthRegion
@@ -900,6 +917,10 @@ For multi-stemmed trees, d.r.c. is calculated from an equation that incorporates
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#LandUse
 :LandUse rdf:type owl:Class ;
+         owl:equivalentClass [ rdf:type owl:Restriction ;
+                               owl:onProperty :isLandUseOf ;
+                               owl:someValuesFrom :PlotSubArea
+                             ] ;
          rdfs:subClassOf :PlotAreaClassification ;
          skos:definition "classification of a nonforest plot subarea by its land use"@en ;
          skos:prefLabel <https://www.easi.uni-bayreuth.de/crossnfi> ,
@@ -1020,17 +1041,17 @@ not existent in US, often identical with NUTS1 in Germany"""@en ;
                               "área de no bosque"@es .
 
 
-###  https://www.easi.uni-bayreuth.de/crossnfi#NonForestPlotArea
-:NonForestPlotArea rdf:type owl:Class ;
-                   rdfs:subClassOf :PlotSubArea ,
-                                   [ rdf:type owl:Restriction ;
-                                     owl:onProperty geo:sfWithin ;
-                                     owl:someValuesFrom :InventoryArea
-                                   ] ;
-                   skos:definition "a plot subarea which is not located in forest area"@en ;
-                   skos:prefLabel "Nichtwald-Plotunterfläche"@de ,
-                                  "non forest plot subarea"@en ,
-                                  "subárea de parcela de no bosque"@es .
+###  https://www.easi.uni-bayreuth.de/crossnfi#NonForestPlotSubarea
+:NonForestPlotSubarea rdf:type owl:Class ;
+                      rdfs:subClassOf :PlotSubArea ,
+                                      [ rdf:type owl:Restriction ;
+                                        owl:onProperty geo:sfWithin ;
+                                        owl:someValuesFrom :InventoryArea
+                                      ] ;
+                      skos:definition "a plot subarea which is not located in forest area"@en ;
+                      skos:prefLabel "Nichtwald-Plotunterfläche"@de ,
+                                     "non forest plot subarea"@en ,
+                                     "subárea de parcela de no bosque"@es .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#NonInventoryArea
@@ -1077,12 +1098,42 @@ not existent in US, often identical with NUTS1 in Germany"""@en ;
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#OwnerGroup
 :OwnerGroup rdf:type owl:Class ;
+            owl:equivalentClass [ rdf:type owl:Restriction ;
+                                  owl:onProperty :isOwnerGroupOf ;
+                                  owl:someValuesFrom :PlotSubArea
+                                ] ;
             rdfs:subClassOf :PlotAreaClassification ;
             rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
             skos:definition "classification of a plot subarea by the nature oft its owner according to private or public law" ;
             skos:prefLabel "Eigentümergruppe"@de ,
                            "grupo de propietario"@es ,
                            "owner group"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#PermanentlyNonStockedForest
+:PermanentlyNonStockedForest rdf:type owl:Class ;
+                             rdfs:subClassOf :LandUse ;
+                             skos:definition """Area, which is permanently not covered by trees for diverging
+reasons but closely related to the forest. 
+
+\"Non-Stocked Forest Areas are forest roads, aisles and protection bands with at least 5m width, timber storage places, non-commercial nursery gardens in entanglement
+with the forest, temporary seedling collection sites, wildlife meadows and wildlife fields, courts and buildings serving forestry use, recreation sites connected to the forest, as well as rocks, stone runs, gravel sites and water bodies located in the forest. Also marshlands and bogs located in the forest are considered Non-Stocked
+Forest Area.\"
+
+Riedel T., Hennig P., Polley H., Schwitzgebel F.,  2021, 
+Aufnahmeanweisung für die vierte Bundeswaldinventur (2021 - 2022),  
+BMEL Bundesministerium für Ernährung und Landwirtschaft, Bonn"""@en ;
+                             skos:note """A land category in countries with a German forestry tradition. Counts as forest area in Germany, but is not used for calculating statistics. Other NFIs map these areas partly as forest, partly as non-forest. 
+
+Not to be confused with temporarily unstocked forest area, which is counted here 
+as forest area.
+
+In the Spanish IFN there is a sub-category of temporarily unstocked forest area (internal to the Spanish hierarchy) called \"complements to the forest\", (complementos del bosque) with the single example of firebreaks (contrafuegos).
+
+The US FIA either includes them in the forest if they don't meet the relevant size criterie or  breaks up these areas into the corresponding land uses (Developed, Rangeland, _), where several cases like forest roads, power lines or recreational areas are exempted from the minimum size obligations"""@en ;
+                             skos:prefLabel "Nichtholzboden"@de ,
+                                            "complementos del bosque"@es ,
+                                            "permanently non-stocked forest area"@en .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#Plant
@@ -1136,10 +1187,14 @@ not existent in US, often identical with NUTS1 in Germany"""@en ;
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#PlotAreaClassification
 :PlotAreaClassification rdf:type owl:Class ;
+                        owl:equivalentClass [ rdf:type owl:Restriction ;
+                                              owl:onProperty :classifies ;
+                                              owl:someValuesFrom :PlotSubArea
+                                            ] ;
                         rdfs:subClassOf :Classification ;
                         skos:definition "a classification where the classified entity is a subplot area or its associated terrain or legal status" ;
-                        skos:prefLabel "Klassifikation einer Plotunterfläche"@de ,
-                                       "clasificación de una área de subparcela"@es ,
+                        skos:prefLabel "Klassifikation einer Plotteilfläche"@de ,
+                                       "clasificación de una área inferior de parcela"@es ,
                                        "classification of a plot subarea"@en .
 
 
@@ -1173,12 +1228,24 @@ not existent in US, often identical with NUTS1 in Germany"""@en ;
                      rdfs:subClassOf :ForestCommunity ,
                                      [ rdf:type owl:Restriction ;
                                        owl:onProperty geo:sfWithin ;
-                                       owl:someValuesFrom :ForestPlotArea
+                                       owl:someValuesFrom :ForestPlotSubarea
                                      ] ;
                      skos:definition "the community of plants and animals found on  a forest plot subarea"@en ;
-                     skos:prefLabel "Wald-Lebensgemeinschaft einer Plotunterfläche"@de ,
+                     skos:prefLabel "Wald-Lebensgemeinschaft einer Plotteilfläche"@de ,
                                     "comunidad forestal de un subárea de parcela"@es ,
-                                    "forest commmunity of a subplot area"@en .
+                                    "forest commmunity of a plot subarea"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#PlotForestCommunityClassification
+:PlotForestCommunityClassification rdf:type owl:Class ;
+                                   owl:equivalentClass [ rdf:type owl:Restriction ;
+                                                         owl:onProperty :classifies ;
+                                                         owl:someValuesFrom :ForestCommunity
+                                                       ] ;
+                                   rdfs:subClassOf :Classification ;
+                                   skos:prefLabel "Klassifikation einer Wald-Lebensgemeinschaft"@de ,
+                                                  "clasificación de una comunidad forestal"@es ,
+                                                  "classification of a forest community"@en .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#PlotGreaterArea
@@ -1233,9 +1300,9 @@ Possible boundaries are refered to by `geo:hasGeometry`
 If a National Forest Inventory divides a plot greater area into subareas that have a finer type system than crossnfi, then different plot subareas of same crossnfi-class are created, with differing classifications in the differentiation quality. Eg FIA divides its condition classes also along owner group, while crossnfi only knows Forest and Non-Forest. Thus the plot will have several subplot areas of type Forest, which have differing owner group classifications.
 
 FIA is the only NFI of the three which constructs these expliicitly. IFN (Inventario Forestal Nacional) moves the plot if sample areas would fall into Non-Forest or a land use different to the land use of the plot central point and thus avoids the problem. BWI notes boundaries between Forest and Non-Forest and Stands, but uses these boundaries for a mirroring algorithm for its angle count sample, so that the non-forest subplot areas are included into the forest inventory only implicitly by  extending the measurements by fictious entities creating an imaginary world without the forest or stand border."""@en ;
-             skos:prefLabel "Plotunterfläche"@de ,
+             skos:prefLabel "Plotteilfläche"@de ,
                             "plot subarea"@en ,
-                            "subarea de parcela"@es .
+                            "subárea de parcela"@es .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#PrivateOwner
@@ -1292,7 +1359,7 @@ FIA is the only NFI of the three which constructs these expliicitly. IFN (Invent
 ###  https://www.easi.uni-bayreuth.de/crossnfi#Rangelands
 :Rangelands rdf:type owl:Class ;
             rdfs:subClassOf :LandUse ;
-            skos:altLabel "monte desarbolado"@es ;
+            skos:altLabel "monte desarbolado (sin humedales) y monte desarbolado con arbolado disperso"@es ;
             skos:definition "Weideland"@de ,
                             "land with vegetation suited for grazing"@en ,
                             "pasto"@es ;
@@ -1384,6 +1451,10 @@ FIA is the only NFI of the three which constructs these expliicitly. IFN (Invent
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#SamplingStatus
 :SamplingStatus rdf:type owl:Class ;
+                owl:equivalentClass [ rdf:type owl:Restriction ;
+                                      owl:onProperty :isSamplingStatusOf ;
+                                      owl:someValuesFrom :PlotSubArea
+                                    ] ;
                 rdfs:subClassOf :PlotAreaClassification ;
                 rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
                 skos:definition "classification of a plot subarea on if it was sampled or not. If negative also gives the reason."@en ;
@@ -1412,6 +1483,17 @@ FIA is the only NFI of the three which constructs these expliicitly. IFN (Invent
        skos:prefLabel "Neigung"@de ,
                       "pendiente"@es ,
                       "slope"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#StandSizeClass
+:StandSizeClass rdf:type owl:Class ;
+                rdfs:subClassOf :PlotForestCommunityClassification ;
+                rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                skos:definition "classification of a forest community according to which diameter class most of its trees belong to."@en ;
+                skos:note "The Spanish IFN notes down the three main species present at a plot and classifies those according to dimension. The dimension of the most dominant species is further used in this ontology."@en ;
+                skos:prefLabel "Dimensionsklassen"@de ,
+                               "estado de diametro"@es ,
+                               "stand size class"@en .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#StateOwner
@@ -1448,6 +1530,36 @@ An NFI can choose to assign plots to  strata in 2 ways:
              skos:prefLabel "Stratumsfläche"@de ,
                             "stratum area"@en ,
                             "área de estrato"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#TemporarilyNonStockedForest
+:TemporarilyNonStockedForest rdf:type owl:Class ;
+                             rdfs:subClassOf :StandSizeClass ;
+                             rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                             skos:definition "a community whose vegetation does not meet the criteria for forest, but is expected to do so in the future"@en ;
+                             skos:note """this can refer to an empty forest community, eg after a fire. Each plot classified as this has its own empty forest community (because it is an endurant). 
+
+the German NFI and the Spanish IFN classify the plot subarea in this way.  The BWI then includes the corresponding forest community in the weakest dimension class.  
+
+The IFN notes down the three main species present at a plot and classifies those according to dimension. Since there are no species recorded on a plot of temporarily non-stocked forest area, the problem of how to classify their dimension does nor arise.
+
+for the latter it's not clear to the author how the data  some the vegetation (like we do)."""@en ;
+                             skos:prefLabel "Blöße"@de ,
+                                            "monte arbolado temporalmente sin cobertura"@es ,
+                                            "temporarily non-stocked forest"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#TimberStand
+:TimberStand rdf:type owl:Class ;
+             rdfs:subClassOf :StandSizeClass ;
+             rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+             skos:definition """For the German BWI and the Spanish IFN the border value is at 20 cm, for the US FIA it lies at 9 in = 22.86 cm for softwoods (conifers) and woodland trees and at 11 in = 27.94 cm for hardwoods
+
+The German BWI and the US FIA use a finer classification, but the Spanish IFN uses this single broad class."""@en ,
+                             "a forest community whose vegetation's trees predominantly  have a DBH aboye an NFI specific border value of around 20 cm to 28 cm and satisfy the minimum criteria for forest"@en ;
+             skos:prefLabel "Baumholz"@de ,
+                            "fustal"@es ,
+                            "timber stand"@en .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#TotalArea
@@ -1504,7 +1616,21 @@ Tomppo et al base point: On level terrain the base point is the point resulting 
           skos:altLabel "wetlands"@en ;
           skos:definition "a distinct semi-aquatic ecosystem whose groundcovers are flooded or saturated in water, either permanently, for years or decades, or only seasonally."@en ;
           skos:prefLabel "Feuchtgebiet"@de ,
-                         "Humedal"@es .
+                         "humedal"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#YoungStand
+:YoungStand rdf:type owl:Class ;
+            rdfs:subClassOf :StandSizeClass ;
+            rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+            skos:altLabel "Stangenholz (BWI)"@de ;
+            skos:definition "a forest community whose vegetation's trees predominantly  have a DBH below an NFI specific border value of around 20 to 28 cm and satisfy the minimum criteria for forest"@en ;
+            skos:note """For the German BWI and the Spanish IFN the border value is at 20 cm, for the US FIA it lies at 9 in = 22.86 cm for softwoods (conifers) and woodland trees and at 11 in = 27.94 cm for hardwoods
+
+The Spanish IFN and the US FIA have  a finer classification, but the German BWI uses this broad class"""@en ,
+                      "Jungbestand"@de ,
+                      "bosque joven"@es ,
+                      "young stand"@en .
 
 
 #################################################################
@@ -1597,6 +1723,12 @@ Tomppo et al base point: On level terrain the base point is the point resulting 
 #################################################################
 #    Annotations
 #################################################################
+
+<https://datos.iepnb.es/def/sector-publico/medio-ambiente/ifn/Species6> skos:definition "a community whose vegetation which does not meet the minimum criteria of forest at the moment, but is expected to do so in the in the future."@en ;
+                                                                        skos:prefLabel "Blöße"@de ,
+                                                                                       "monte arbolada temporalmente sin cobertura"@es ,
+                                                                                       "temporarily non-stocked forest area"@en .
+
 
 :PublicOwner skos:prefLabel "propietario estatal" .
 
