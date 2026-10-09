@@ -64,6 +64,14 @@ skos:prefLabel rdf:type owl:AnnotationProperty ;
 #    Object Properties
 #################################################################
 
+###  http://www.opengis.net/ont/geosparql#hasGeometry
+geo:hasGeometry rdf:type owl:ObjectProperty ;
+                rdfs:domain geo:Feature ;
+                rdfs:range geo:Geometry ;
+                skos:definition "A spatial representation for a given Feature"@en ;
+                skos:prefLabel "has Geometry"@en .
+
+
 ###  http://www.opengis.net/ont/geosparql#sfContains
 geo:sfContains rdf:type owl:ObjectProperty ;
                owl:inverseOf geo:sfWithin ;
@@ -303,6 +311,17 @@ entities for which there is data to be found at a plot. These entities are sampl
                           "tiene DAP  mínima"@es .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#hasOriginallyScheduled
+:hasOriginallyScheduled rdf:type owl:ObjectProperty ;
+                        rdfs:subPropertyOf geo:hasGeometry ;
+                        rdfs:domain :InventoryScheme ;
+                        rdfs:range :Position ;
+                        skos:definition "hat ursprünglich geplant"@de ,
+                                        "the position that was initially assigned to a template cluster or template plot by the NFI procedure (grid or random choice)"@en ,
+                                        "tiene provista originalmente"@es ;
+                        skos:prefLabel "has originally scheduled"@en .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#hasOwnerGroup
 :hasOwnerGroup rdf:type owl:ObjectProperty ;
                rdfs:subPropertyOf :isClassifiedAs ;
@@ -340,6 +359,19 @@ entities for which there is data to be found at a plot. These entities are sampl
                            "tiene calidad"@es .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#hasReferencePosition
+:hasReferencePosition rdf:type owl:ObjectProperty ;
+                      rdfs:subPropertyOf geo:hasGeometry ;
+                      rdfs:domain geo:Feature ;
+                      rdfs:range :Position ;
+                      skos:definition "has reference position"@en ,
+                                      "hat Referenzposition"@de ,
+                                      "relates a feature to its reference position."@en ,
+                                      "tiene posición de referencia"@es ;
+                      skos:note """For many features like most plot main areas or sample areas this is the central point of a circle, for other features like the German BWI 's cluster area set it is the northwest
+plot main area's reference position."""@en .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#hasSamplingStatus
 :hasSamplingStatus rdf:type owl:ObjectProperty ;
                    rdfs:subPropertyOf :isClassifiedAs ;
@@ -350,6 +382,17 @@ entities for which there is data to be found at a plot. These entities are sampl
                    skos:prefLabel "has sampling status"@en ,
                                   "hat Erfassungszustand"@de ,
                                   "tiene estado de muestreo"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#hasScheduled
+:hasScheduled rdf:type owl:ObjectProperty ;
+              rdfs:subPropertyOf geo:hasGeometry ;
+              rdfs:domain :InventoryScheme ;
+              rdfs:range :Position ;
+              skos:definition "before the first survey a template cluster or template point  has scheduled the same position that it has originally scheduled, after that it is the position of the last survey implementation"@en ;
+              skos:prefLabel "has scheduled"@en ,
+                             "hat geplant"@de ,
+                             "tiene provista"@es .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#hasSlope
@@ -374,6 +417,31 @@ entities for which there is data to be found at a plot. These entities are sampl
                                   "tiene estado de diámetro"@es .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#implements
+:implements rdf:type owl:ObjectProperty ;
+            rdfs:subPropertyOf owl:topObjectProperty ;
+            owl:inverseOf :isImplementedBy ;
+            rdfs:domain geo:Feature ;
+            rdfs:range :InventoryScheme ;
+            skos:definition """a cluster area  set  implements a template cluster , if its reference position is sufficiently close to the template cluster's  scheduled position at the beginning of the cluster area set's lifetime. 
+
+Likewise a plot main area implements a template plot, if its central position is located sufficiently close to the template plot's scheduled position at the beginning of the template plot's lifetime"""@en ;
+            skos:prefLabel "implementa"@es ,
+                           "implementiert"@de ,
+                           "implements"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#impliesByPattern
+:impliesByPattern rdf:type owl:ObjectProperty ;
+                  owl:inverseOf :isImpliedByPatternBy ;
+                  rdfs:domain :TemplateCluster ;
+                  rdfs:range :TemplatePlot ;
+                  skos:definition "a template cluster's originally scheduled location dictates its template points' originally scheduled location by a spatial pattern"@en ;
+                  skos:prefLabel "bestimmt durch Muster"@de ,
+                                 "implica por molde"@es ,
+                                 "implies by pattern"@en .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#isClassifiedAs
 :isClassifiedAs rdf:type owl:ObjectProperty ;
                 rdfs:subPropertyOf :hasQuality ;
@@ -383,6 +451,28 @@ entities for which there is data to be found at a plot. These entities are sampl
                 skos:prefLabel "es clasificado como"@es ,
                                "is classified as"@en ,
                                "ist klassifiziert als"@de .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#isImplementedBy
+:isImplementedBy rdf:type owl:ObjectProperty ;
+                 rdfs:domain :InventoryScheme ;
+                 rdfs:range geo:Feature ;
+                 skos:definition """a template cluster is implemented by a cluster area set  , if  the cluster area set's reference position is sufficiently close to the template cluster's  scheduled position at the beginning of the cluster area set's lifetime. 
+
+Likewise a template plot is implemented by a plot main area, if the plot main area's central position is located sufficiently close to the template plot's scheduled position at the beginning of the template plot's lifetime"""@en ;
+                 skos:prefLabel "es implementado por"@es ,
+                                "is implemented by"@en ,
+                                "wird implementiert von"@de .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#isImpliedByPatternBy
+:isImpliedByPatternBy rdf:type owl:ObjectProperty ;
+                      rdfs:domain :TemplatePlot ;
+                      rdfs:range :TemplateCluster ;
+                      skos:definition "a template point's originally scheduled location depends on the originally scheduled location of its cluster"@en ;
+                      skos:prefLabel "es implicado por molde por"@es ,
+                                     "is implied by pattern by"@en ,
+                                     "ist per Muster bestimmt durch"@de .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#isLandUseOf
@@ -525,6 +615,30 @@ expressions. These quantity kind relationships are also discussed in dimensional
 as \"fundamental\" in this sense.</p>
 <p>A quantity is distinguished from a \"quantity kind\" in that the former carries a value and the latter is a type specifier.
 </p>""" .
+
+
+###  http://www.opengis.net/ont/geosparql#Feature
+geo:Feature rdf:type owl:Class ;
+            rdfs:subClassOf geo:SpatialObject ;
+            skos:definition "A discrete spatial phenomenon in a universe of discourse."@en ;
+            skos:note "A Feature represents a uniquely identifiable phenomenon, for example a river or an apple. While such phenomena (and therefore the Features used to represent them) are bounded, their boundaries may be crisp (e.g., the declared boundaries of a state), vague (e.g., the delineation of a valley versus its neighboring mountains), and change with time (e.g., a storm front). While discrete in nature, Features may be created from continuous observations, such as an isochron that determines the region that can be reached by ambulance within 5 minutes."@en ;
+            skos:prefLabel "Feature"@en .
+
+
+###  http://www.opengis.net/ont/geosparql#Geometry
+geo:Geometry rdf:type owl:Class ;
+             rdfs:subClassOf geo:SpatialObject ;
+             rdfs:isDefinedBy geo: ;
+             skos:definition "A coherent set of direct positions in space. The positions are held within a Spatial Reference System (SRS)."@en ;
+             skos:note "Geometry can be used as a representation of the shape, extent or location of a Feature and may exist as a self-contained entity."@en ;
+             skos:prefLabel "Geometry"@en .
+
+
+###  http://www.opengis.net/ont/geosparql#SpatialObject
+geo:SpatialObject rdf:type owl:Class ;
+                  rdfs:isDefinedBy geo: ;
+                  skos:note "Subclasses of this class are expected to be used for instance data."@en ;
+                  skos:prefLabel "Anything spatial (being or having a shape, position or an extent)"@en .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#AbioticProcess
@@ -733,6 +847,56 @@ certain pattern."""@en ;
                         "cluster"@en .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#ClusterAreaSet
+:ClusterAreaSet rdf:type owl:Class ;
+                owl:equivalentClass [ rdf:type owl:Restriction ;
+                                      owl:onProperty :implements ;
+                                      owl:someValuesFrom :TemplateCluster
+                                    ] ;
+                rdfs:subClassOf geo:Feature ,
+                                [ rdf:type owl:Restriction ;
+                                  owl:onProperty :hasReferencePosition ;
+                                  owl:someValuesFrom :Position
+                                ] ;
+                skos:definition "Set of plot main areas, which implement the templats plote a template cluster implies.  Has a central posiition that is sufficiently close to the implemented template cluster's  scheduled position"@en ;
+                skos:note """The Spanish IFN doesn't use clusters, hence there always is a cluster area set derived from the single plot main area it contains.
+
+The German BWI does not model this class and only knows template clusters, hence every template cluster gets a standard cluster area set. Its reference position always 
+equals the  template cluster's originally scheduled position. 
+
+The US FIA models only cluster area sets (calling them \"plot\") and the template clusters are implied in  their data. 
+
+There is the event that a field crew does not identify the cluster area set's reference position of the previous inventory cycle and sets a new reference position. This ends the lifetime of a cluster area set and  a newly created  implements the corresponding template cluster. 
+
+With the German BWI this event is handled at the plot main area level only and handled there,  in cannot happen to a cluster area set.
+
+For the US FIA the cluster area set is the main class dealing with the event and propagates it to the plot main areas it contains."""@en ;
+                skos:prefLabel "Cluster-Gebietsmenge"@de ,
+                               "cluster area set"@en ,
+                               "conjunto de areás de un  acopiamiento"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#ClusterAreaSetClassification
+:ClusterAreaSetClassification rdf:type owl:Class ;
+                              owl:equivalentClass [ rdf:type owl:Restriction ;
+                                                    owl:onProperty :classifies ;
+                                                    owl:someValuesFrom :ClusterAreaSet
+                                                  ] ;
+                              rdfs:subClassOf :Classification ;
+                              skos:prefLabel "Klassifikation einer Cluster-Gebietsmenge"@de ,
+                                             "clasificación de un conjunto de areás de un acopiamiento"@es ,
+                                             "classification of a cluster area set"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#ClusterAreaSetSamplingStatus
+:ClusterAreaSetSamplingStatus rdf:type owl:Class ;
+                              rdfs:subClassOf :ClusterAreaSetClassification ;
+                              skos:definition "classification of a cluster area set according to if it is sampled or not and if not states why."@en ;
+                              skos:prefLabel "Erfassungsstatus einer Cluster-Gebietsmenge"@de ,
+                                             "cluster area set sampling status"@en ,
+                                             "estado de muestreo de un conjunto de areás de acopiamiento"@es .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#Conifer
 :Conifer rdf:type owl:Class ;
          rdfs:subClassOf :Tree ;
@@ -823,31 +987,23 @@ For multi-stemmed trees, d.r.c. is calculated from an equation that incorporates
             rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ,
                              "FAO  Forest Resource Assement - Terms and Definitions"@en ;
             rdfs:seeAlso <https://www.fao.org/forest-resources-assessment/en/> ;
-            skos:definition "Land spanning more than 0.5 hectares with trees higher than 5 meters and a canopy cover of more than 10 percent, or trees able to reach these thresholds in situ. It does not include land that is predominantly under agricultural or urban land use."@en ;
-            skos:note """US FIA also includes chapparal and pinyon-juniper formations, which are excluded by the international definition (and also in Spain). 
+            skos:definition """The part of an total area on which forest vegetation is stocking. The definition for forest vegetation are specific to the NFI. Expanding the FAO reference definition for forest gives:
+
+Land spanning more than 0.5 hectares with trees higher than 5 meters and a canopy cover of more than 10 percent, or trees able to reach these thresholds in situ. It does not include land that is predominantly under agricultural or urban land use. Includes area whose vegetation currently doesn't satisfy these conditions, but did so in the past and is expected to do so in the future."""@en ;
+            skos:note """The criteria for the single NFIs: 
+German BWI:  forest trees stocking on an area of at least 0.1 ha with a minimum width of 10 m and stocking on at least 50 % of that area. 
+
+US FIA:  forest trees stocking on an area of at least 1 acre  (~0.4 ha) with a minimum width of 120 feet (36.6 m) and stocking on  or covering at least 10 % of that area.
+
+Spanish IFN:  forest trees stocking on an area of which they cover at least 10 %.
+
+Further notes: 
+US FIA also includes chapparal and pinyon-juniper formations, which are excluded by the international definition (and also in Spain). 
 
 German non-stocked forest area is excluded, although it would partly be included in the FAO definition."""@en ;
             skos:prefLabel "Waldfläche"@de ,
                            "area de bosque"@es ,
                            "forest area"@en .
-
-
-###  https://www.easi.uni-bayreuth.de/crossnfi#ForestCommunity
-:ForestCommunity rdf:type owl:Class ;
-                 rdfs:subClassOf [ rdf:type owl:Restriction ;
-                                   owl:onProperty geo:sfWithin ;
-                                   owl:someValuesFrom :Region
-                                 ] ,
-                                 [ rdf:type owl:Restriction ;
-                                   owl:onProperty :inYear ;
-                                   owl:someValuesFrom xsd:integer
-                                 ] ;
-                 rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
-                 skos:broader "bfo : object aggregate (27)"@en ;
-                 skos:definition "community of plants and animals living in a forest area, including their remains, defined by the area on which they are located."@en ;
-                 skos:prefLabel "Wald-Lebensgemeinschaft"@de ,
-                                "comunidad forestal"@es ,
-                                "forest community"@en .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#ForestPlotSubarea
@@ -861,7 +1017,8 @@ German non-stocked forest area is excluded, although it would partly be included
                                      owl:onProperty geo:sfWithin ;
                                      owl:someValuesFrom :InventoryArea
                                    ] ;
-                   skos:definition "plot area which is situated in a forest area"@en ;
+                   skos:definition """intersection of the immediate surroundings of a plot with the total forest area of the
+total area the plot is contained in. Thus its vegetation usually is forest vegetation"""@en ;
                    skos:prefLabel "Wald-Plotteilfläche"@de ,
                                   "forest plot subarea"@en ,
                                   "área de parcela en bosque"@es .
@@ -893,16 +1050,28 @@ German non-stocked forest area is excluded, although it would partly be included
                               "menschliche Aktitvität"@de .
 
 
-###  https://www.easi.uni-bayreuth.de/crossnfi#Invalid
-:Invalid rdf:type owl:Class ;
-         rdfs:subClassOf :NotSampled ;
-         skos:definition "the plot subarea is not valid"@en ;
-         skos:note """possible reasons are
-- its hypothetical location corresponds to the pattern of a cluster or grit, but is situated in non-inventory area or an area with a different sampling density. 
+###  https://www.easi.uni-bayreuth.de/crossnfi#InvalidCluster
+:InvalidCluster rdf:type owl:Class ;
+                rdfs:subClassOf :NonSampledCluster ;
+                skos:definition "all the cluster area set's  plot main  area are not valid"@en ,
+                                "inválido"@es ;
+                skos:note """possible reasons are
+- all the cluster is in non-inventory area 
 - its at the location of a previous inventory instance, but was dropped in this instance for example because the cluster / plot density was dropped"""@en ;
-         skos:prefLabel "invalid"@en ,
-                        "inválido"@es ,
-                        "ungültig"@de .
+                skos:prefLabel "invalid"@en ,
+                               "ungültig"@de .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#InvalidPlot
+:InvalidPlot rdf:type owl:Class ;
+             rdfs:subClassOf :NonsampledPlot ;
+             skos:definition "the plot area is not valid"@en ;
+             skos:note """possible reasons are
+- its hypothetical location corresponds to the pattern of a cluster or grid, but is situated in non-inventory area or an area with a different sampling density. 
+- its at the location of a previous inventory instance, but was dropped in this instance for example because the cluster / plot density was dropped"""@en ;
+             skos:prefLabel "invalid"@en ,
+                            "inválido"@es ,
+                            "ungültig"@de .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#InventoryArea
@@ -915,13 +1084,22 @@ German non-stocked forest area is excluded, although it would partly be included
                               "área de inventario"@es .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#InventoryScheme
+:InventoryScheme rdf:type owl:Class ;
+                 skos:broader "bfo : generally dependent continuant (31)"@en ;
+                 skos:definition "the design and planning of an inventory project or a part of it"@en ;
+                 skos:prefLabel "Inventurentwurf"@de ,
+                                "esquema de inventorio"@es ,
+                                "inventory scheme"@en .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#LandUse
 :LandUse rdf:type owl:Class ;
          owl:equivalentClass [ rdf:type owl:Restriction ;
                                owl:onProperty :isLandUseOf ;
                                owl:someValuesFrom :PlotSubArea
                              ] ;
-         rdfs:subClassOf :PlotAreaClassification ;
+         rdfs:subClassOf :PlotSubareaClassification ;
          skos:definition "classification of a nonforest plot subarea by its land use"@en ;
          skos:prefLabel <https://www.easi.uni-bayreuth.de/crossnfi> ,
                         "Landnutzung"@de ,
@@ -933,9 +1111,9 @@ German non-stocked forest area is excluded, although it would partly be included
 :MapSubarea rdf:type owl:Class ;
             rdfs:subClassOf :TotalArea ;
             rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
-            skos:definition "a subarea delineated in a map, most often a polygon or multipolygon. It has an area."@en ,
+            skos:definition "a subarea delineated in a map, most often a polygon or multipolygon. It has an area (quantity)."@en ,
                             "subárea de una mapa"@es ;
-            skos:prefLabel "Karten-Unterfläche"@de ,
+            skos:prefLabel "Karten-Teilfläche"@de ,
                            "map subarea"@en .
 
 
@@ -987,7 +1165,9 @@ Spains level 1 seem to be artificial groupings of level 2 autonomous communities
              skos:definition "basic regions (for regional policies)"@en ;
              skos:note """Nomenclature of territorial units for statistics (Nomenclature des Unités territoriales statistiques)
 
-not existent in US, often identical with NUTS1 in Germany"""@en ;
+US FIA uses unit,  a grouping of counties which is only valid FIA internally.
+
+In Germany often identical with NUTS1."""@en ;
              skos:prefLabel "Bezirk"@de ,
                             "comunidad autónoma"@en ,
                             "region of NUTS level 2"@en .
@@ -1000,7 +1180,7 @@ not existent in US, often identical with NUTS1 in Germany"""@en ;
              rdfs:seeAlso <https://ec.europa.eu/eurostat/web/nuts> ;
              skos:altLabel "Region auf NUTS Level 2"@de ,
                            "region of NUTS level 3"@en ,
-                           "región de nivel de NUTS de 2"@es ;
+                           "región de nivel de NUTS de 3"@es ;
              skos:definition "small regions (for specific diagnoses)"@de ;
              skos:note "Nomenclature of territorial units for statistics (Nomenclature des Unités territoriales statistiques)"@en ;
              skos:prefLabel "Kreis"@de ,
@@ -1064,36 +1244,74 @@ not existent in US, often identical with NUTS1 in Germany"""@en ;
                                  "área de non-inventario"@es .
 
 
-###  https://www.easi.uni-bayreuth.de/crossnfi#NotAccessible
-:NotAccessible rdf:type owl:Class ;
-               rdfs:subClassOf :NotSampled ;
-               rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
-               skos:definition "a plot subarea which was not sampled by the plot not being accessible."@en ;
-               skos:note "the reason can be difficult terrain, a temporar hazardous situation (storm throw or insect damage) or   legal access restriction of public (military) or private nature"@en ;
-               skos:prefLabel "accesible"@es ,
-                              "nicht betretbar"@de ,
-                              "not accessible"@en .
+###  https://www.easi.uni-bayreuth.de/crossnfi#NonSampledCluster
+:NonSampledCluster rdf:type owl:Class ;
+                   rdfs:subClassOf :ClusterAreaSetSamplingStatus ;
+                   skos:definition "a cluster area set, which contains no plot main area which was sampled"@en ,
+                                   "nicht erfasst"@de ,
+                                   "no muestrada"@es ,
+                                   "nonsampled"@en .
 
 
-###  https://www.easi.uni-bayreuth.de/crossnfi#NotSampled
-:NotSampled rdf:type owl:Class ;
-            rdfs:subClassOf :SamplingStatus ;
-            rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
-            skos:definition "a plot subarea which was not sampled"@en ;
-            skos:note "this includes plot subareas that fall under the umbrella of \"other reason\" classifications"@en ;
-            skos:prefLabel "nicht erfasst"@de ,
-                           "no muestrada"@es ,
-                           "non-sampled"@en .
+###  https://www.easi.uni-bayreuth.de/crossnfi#NonsampledOnlyNonForest
+:NonsampledOnlyNonForest rdf:type owl:Class ;
+                         rdfs:subClassOf :NonSampledCluster ;
+                         skos:definition "a cluster area set which was not sampled as it was obvious beforehand that it contained only non-forest"@en ;
+                         skos:prefLabel "nur Nicht-Wald"@de ,
+                                        "only non forest"@en ,
+                                        "solo no bosque"@es .
 
 
-###  https://www.easi.uni-bayreuth.de/crossnfi#OrganizationallyImpossible
-:OrganizationallyImpossible rdf:type owl:Class ;
-                            rdfs:subClassOf :NotSampled ;
-                            rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
-                            skos:definition "a plot subarea which was not sampled for organizational reasons"@en ;
-                            skos:prefLabel "imposiple organizadormente"@es ,
-                                           "organisatorisch unmöglich"@de ,
-                                           "organizationally impossible"@en .
+###  https://www.easi.uni-bayreuth.de/crossnfi#NonsampledPlot
+:NonsampledPlot rdf:type owl:Class ;
+                rdfs:subClassOf :SamplingStatus ;
+                rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                skos:definition "a plot subarea which was not sampled"@en ;
+                skos:note "this includes plot main areas that fall under the umbrella of \"other reason\" classifications"@en ;
+                skos:prefLabel "nicht erfasst"@de ,
+                               "no muestrada"@es ,
+                               "non-sampled"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#NotAccessibleCluster
+:NotAccessibleCluster rdf:type owl:Class ;
+                      rdfs:subClassOf :NonSampledCluster ;
+                      skos:definition "a cluster area set which was not sampled by all its plots not being accessible."@en ,
+                                      "nicht betretbar"@de ,
+                                      "no accesible"@es ,
+                                      "not accessible"@en ;
+                      skos:note "the reason can be difficult terrain, a temporary hazardous situation (storm throw or insect damage) or   legal access restriction of public (military) or private nature"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#NotAccessiblePlot
+:NotAccessiblePlot rdf:type owl:Class ;
+                   rdfs:subClassOf :NonsampledPlot ;
+                   rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                   skos:definition "a plot main area which was not sampled by the plot not being accessible."@en ;
+                   skos:note "the reason can be difficult terrain, a temporary hazardous situation (storm throw or insect damage) or   legal access restriction of public (military) or private nature"@en ;
+                   skos:prefLabel "nicht betretbar"@de ,
+                                  "no accesible"@es ,
+                                  "not accessible"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#OrganizationallyImpossibleCluster
+:OrganizationallyImpossibleCluster rdf:type owl:Class ;
+                                   rdfs:subClassOf :NonSampledCluster ;
+                                   skos:definition "a cluster area set  which was not sampled for organizational reasons"@en ;
+                                   skos:note "Possible reasons are lack of time in in a fixed timeslot,  loss of data, rescheduling for a later sampling"@en ;
+                                   skos:prefLabel "imposible organizadormente"@es ,
+                                                  "organisatorisch unmöglich"@de ,
+                                                  "organizationally impossible"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#OrganizationallyImpossiblePlot
+:OrganizationallyImpossiblePlot rdf:type owl:Class ;
+                                rdfs:subClassOf :NonsampledPlot ;
+                                rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                                skos:definition "a plot main area which was not sampled for organizational reasons"@en ;
+                                skos:prefLabel "imposiple organizadormente"@es ,
+                                               "organisatorisch unmöglich"@de ,
+                                               "organizationally impossible"@en .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#OwnerGroup
@@ -1102,7 +1320,7 @@ not existent in US, often identical with NUTS1 in Germany"""@en ;
                                   owl:onProperty :isOwnerGroupOf ;
                                   owl:someValuesFrom :PlotSubArea
                                 ] ;
-            rdfs:subClassOf :PlotAreaClassification ;
+            rdfs:subClassOf :PlotSubareaClassification ;
             rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
             skos:definition "classification of a plot subarea by the nature oft its owner according to private or public law" ;
             skos:prefLabel "Eigentümergruppe"@de ,
@@ -1185,19 +1403,6 @@ The US FIA either includes them in the forest if they don't meet the relevant si
                          "área de  parcela"@es .
 
 
-###  https://www.easi.uni-bayreuth.de/crossnfi#PlotAreaClassification
-:PlotAreaClassification rdf:type owl:Class ;
-                        owl:equivalentClass [ rdf:type owl:Restriction ;
-                                              owl:onProperty :classifies ;
-                                              owl:someValuesFrom :PlotSubArea
-                                            ] ;
-                        rdfs:subClassOf :Classification ;
-                        skos:definition "a classification where the classified entity is a subplot area or its associated terrain or legal status" ;
-                        skos:prefLabel "Klassifikation einer Plotteilfläche"@de ,
-                                       "clasificación de una área inferior de parcela"@es ,
-                                       "classification of a plot subarea"@en .
-
-
 ###  https://www.easi.uni-bayreuth.de/crossnfi#PlotBioticProcess
 :PlotBioticProcess rdf:type owl:Class ;
                    rdfs:subClassOf :BioticProcess ;
@@ -1223,29 +1428,16 @@ The US FIA either includes them in the forest if they don't meet the relevant si
                                 "área de densidad de parcela uniforma"@es .
 
 
-###  https://www.easi.uni-bayreuth.de/crossnfi#PlotForestCommunity
-:PlotForestCommunity rdf:type owl:Class ;
-                     rdfs:subClassOf :ForestCommunity ,
-                                     [ rdf:type owl:Restriction ;
-                                       owl:onProperty geo:sfWithin ;
-                                       owl:someValuesFrom :ForestPlotSubarea
-                                     ] ;
-                     skos:definition "the community of plants and animals found on  a forest plot subarea"@en ;
-                     skos:prefLabel "Wald-Lebensgemeinschaft einer Plotteilfläche"@de ,
-                                    "comunidad forestal de un subárea de parcela"@es ,
-                                    "forest commmunity of a plot subarea"@en .
-
-
-###  https://www.easi.uni-bayreuth.de/crossnfi#PlotForestCommunityClassification
-:PlotForestCommunityClassification rdf:type owl:Class ;
-                                   owl:equivalentClass [ rdf:type owl:Restriction ;
-                                                         owl:onProperty :classifies ;
-                                                         owl:someValuesFrom :ForestCommunity
-                                                       ] ;
-                                   rdfs:subClassOf :Classification ;
-                                   skos:prefLabel "Klassifikation einer Wald-Lebensgemeinschaft"@de ,
-                                                  "clasificación de una comunidad forestal"@es ,
-                                                  "classification of a forest community"@en .
+###  https://www.easi.uni-bayreuth.de/crossnfi#PlotForestVegetationClassification
+:PlotForestVegetationClassification rdf:type owl:Class ;
+                                    owl:equivalentClass [ rdf:type owl:Restriction ;
+                                                          owl:onProperty :classifies ;
+                                                          owl:someValuesFrom :Vegetation
+                                                        ] ;
+                                    rdfs:subClassOf :Classification ;
+                                    skos:prefLabel "Klassifikation einer Wald-Vegetation"@de ,
+                                                   "clasificación de una vegetación del bosque"@es ,
+                                                   "classification of a forest vegetation"@en .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#PlotGreaterArea
@@ -1278,9 +1470,42 @@ As an example take the above assesment of  forest type in BWI where there are 2 
                                   "menschliche Aktivität auf einer Plotunterfläche"@de .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#PlotMainArea
+:PlotMainArea rdf:type owl:Class ;
+              owl:equivalentClass [ rdf:type owl:Restriction ;
+                                    owl:onProperty :implements ;
+                                    owl:someValuesFrom :TemplatePlot
+                                  ] ;
+              rdfs:subClassOf :PlotArea ,
+                              [ rdf:type owl:Restriction ;
+                                owl:onProperty geo:sfContains ;
+                                owl:someValuesFrom :PlotSubArea
+                              ] ;
+              skos:altLabel "immediate surroundings"@en ;
+              skos:definition """An area around the plot reference position, which itself in combination with entities located on it is assessed by the field crew.  Its identity is defined by its central point. 
+It implements a template plot by its central point being sufficiently close to  the template plot's scheduled position.
+
+Generally there is no explicit definition, but it generally is the circle area of radius between 18 and 25 m m around the plot central position."""@en ;
+              skos:prefLabel "Plot-Hauptgebiet"@de ,
+                             "plot main area"@en ,
+                             "área principal de parcela"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#PlotMainAreaClassification
+:PlotMainAreaClassification rdf:type owl:Class ;
+                            rdfs:subClassOf :Classification ;
+                            skos:prefLabel "Klassifikation eines Plot-Hauptgebietes"@de ,
+                                           "clasificación de una areá principal de parcela"@es ,
+                                           "plot main area classification"@en .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#PlotSubArea
 :PlotSubArea rdf:type owl:Class ;
              rdfs:subClassOf :PlotArea ,
+                             [ rdf:type owl:Restriction ;
+                               owl:onProperty geo:sfWithin ;
+                               owl:someValuesFrom :PlotMainArea
+                             ] ,
                              [ rdf:type owl:Restriction ;
                                owl:onProperty :describedByPlot ;
                                owl:someValuesFrom :Plot
@@ -1303,6 +1528,64 @@ FIA is the only NFI of the three which constructs these expliicitly. IFN (Invent
              skos:prefLabel "Plotteilfläche"@de ,
                             "plot subarea"@en ,
                             "subárea de parcela"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#PlotSubareaClassification
+:PlotSubareaClassification rdf:type owl:Class ;
+                           owl:equivalentClass [ rdf:type owl:Restriction ;
+                                                 owl:onProperty :classifies ;
+                                                 owl:someValuesFrom :PlotSubArea
+                                               ] ;
+                           rdfs:subClassOf :Classification ;
+                           skos:definition "a classification where the classified entity is a subplot area or its associated terrain or legal status" ;
+                           skos:prefLabel "Klassifikation einer Plotteilfläche"@de ,
+                                          "clasificación de una área inferior de parcela"@es ,
+                                          "classification of a plot subarea"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#PlotSubareaForestVegetation
+:PlotSubareaForestVegetation rdf:type owl:Class ;
+                             rdfs:subClassOf :PlotSubareaVegetation ,
+                                             [ rdf:type owl:Restriction ;
+                                               owl:onProperty geo:sfWithin ;
+                                               owl:someValuesFrom :ForestPlotSubarea
+                                             ] ,
+                                             [ rdf:type owl:Restriction ;
+                                               owl:onProperty :isPartOf ;
+                                               owl:someValuesFrom :TotalAreaForestVegetation
+                                             ] ;
+                             skos:definition "forest vegetation found on a plot subarea"@en ;
+                             skos:prefLabel "Vegetation einer Wald-Plotteilfläche"@de ,
+                                            "vegetation de una subparcela en bosque"@es ,
+                                            "vegetation of a forest plot subarea"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#PlotSubareaTemporaryNonForestVegetation
+:PlotSubareaTemporaryNonForestVegetation rdf:type owl:Class ;
+                                         rdfs:subClassOf :PlotSubareaForestVegetation ;
+                                         skos:definition """vegetation arrived at by intersecting the area a total area temporary non-forest vegetation stocks with the immediate surroundings of a plot.
+
+Thus it does not meet the criteria for forest vegetation, but did so in the past and is expected to do so in the future""" ;
+                                         skos:prefLabel "vegetación de una subparcela de monte arbolada temporalmente sin cobertura"@es ,
+                                                        "vegetation on a temporary non-stocked forest plot subarea"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#PlotSubareaVegetation
+:PlotSubareaVegetation rdf:type owl:Class ;
+                       rdfs:subClassOf :Vegetation ;
+                       skos:definition "the community of plants found on  a  plot subarea"@en ;
+                       skos:prefLabel "Vegetation einer Plotteilfläche"@de ,
+                                      "vegetación  de un subárea de parcela"@es ,
+                                      "vegetation of a plot subarea"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#Position
+:Position rdf:type owl:Class ;
+          rdfs:subClassOf geo:Geometry ;
+          skos:note "a point on the earth surface"@en ;
+          skos:prefLabel "Position"@de ,
+                         "posición"@es ,
+                         "position"@en .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#PrivateOwner
@@ -1366,9 +1649,29 @@ FIA is the only NFI of the three which constructs these expliicitly. IFN (Invent
             skos:prefLabel "rangelands"@en .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#ReferencePositionRelocatedCluster
+:ReferencePositionRelocatedCluster rdf:type owl:Class ;
+                                   rdfs:subClassOf :NonSampledCluster ;
+                                   skos:definition "Referenzposition verlegt"@de ,
+                                                   "reference position relocated"@en ,
+                                                   "the field crew relocated the reference position of the cluster area set, creating a new cluster area set as replacement"@en ;
+                                   skos:note "Either the field crew was unable to identify the cluster area set's reference point.or the position was outside the tolerance distance of the scheduled point."@en ;
+                                   skos:prefLabel "posición de referencia reubicado"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#ReferencePositionRelocatedPlot
+:ReferencePositionRelocatedPlot rdf:type owl:Class ;
+                                rdfs:subClassOf :NonsampledPlot ;
+                                skos:note "Either the field crew was unable to identify the cluster area set's reference point.or the position was outside the tolerance distance of the scheduled point."@en ;
+                                skos:prefLabel "Referenzposition verlegt"@de ,
+                                               "posición de referencia reubicado"@es ,
+                                               "reference position relocated"@en .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#Region
 :Region rdf:type owl:Class ;
-        rdfs:subClassOf [ rdf:type owl:Restriction ;
+        rdfs:subClassOf geo:Feature ,
+                        [ rdf:type owl:Restriction ;
                           owl:onProperty :desrcibedBy ;
                           owl:someValuesFrom :NationalForestInventory
                         ] ,
@@ -1397,7 +1700,7 @@ FIA is the only NFI of the three which constructs these expliicitly. IFN (Invent
                         ] ,
                         [ rdf:type owl:Restriction ;
                           owl:onProperty :isPartOf ;
-                          owl:someValuesFrom :PlotForestCommunity
+                          owl:someValuesFrom :PlotSubareaVegetation
                         ] ,
                         [ rdf:type owl:Restriction ;
                           owl:onProperty :inYear ;
@@ -1439,28 +1742,44 @@ FIA is the only NFI of the three which constructs these expliicitly. IFN (Invent
                                            "sample of trees of minimum diameter"@en .
 
 
-###  https://www.easi.uni-bayreuth.de/crossnfi#Sampled
-:Sampled rdf:type owl:Class ;
-         rdfs:subClassOf :SamplingStatus ;
-         rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
-         skos:definition "a forest plot subarea, that was sampled"@en ;
-         skos:prefLabel "erfasst"@de ,
-                        "muestrada"@es ,
-                        "sampled"@en .
+###  https://www.easi.uni-bayreuth.de/crossnfi#SampledCluster
+:SampledCluster rdf:type owl:Class ;
+                rdfs:subClassOf :ClusterAreaSetSamplingStatus ;
+                skos:definition "a cluster area set which contains  at least one plot main area which was sampled"@en ,
+                                "sampled" ;
+                skos:prefLabel "aufgenommen"@de ,
+                               "muestreada"@es ,
+                               "" .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#SampledOnlyNonforest
+:SampledOnlyNonforest rdf:type owl:Class ;
+                      rdfs:subClassOf :SampledCluster ;
+                      skos:definition "the cluster area set contains only plot main areas without a forest plot subarea. At least one plot main area was sampled."@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#SampledPlot
+:SampledPlot rdf:type owl:Class ;
+             rdfs:subClassOf :SamplingStatus ;
+             rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+             skos:definition "a plot main area, that was sampled"@en ;
+             skos:prefLabel "erfasst"@de ,
+                            "muestrada"@es ,
+                            "sampled"@en .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#SamplingStatus
 :SamplingStatus rdf:type owl:Class ;
                 owl:equivalentClass [ rdf:type owl:Restriction ;
                                       owl:onProperty :isSamplingStatusOf ;
-                                      owl:someValuesFrom :PlotSubArea
+                                      owl:someValuesFrom :PlotMainArea
                                     ] ;
-                rdfs:subClassOf :PlotAreaClassification ;
+                rdfs:subClassOf :PlotMainAreaClassification ;
                 rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
-                skos:definition "classification of a plot subarea on if it was sampled or not. If negative also gives the reason."@en ;
-                skos:prefLabel "Erfassungszustand"@de ,
-                               "estado de muestreo"@es ,
-                               "sampling status"@en .
+                skos:definition "classification of a plot main area on if it was sampled or not. If negative also gives the reason."@en ;
+                skos:prefLabel "Erfassungszustand einer Plot-Hauptfläche"@de ,
+                               "estado de muestreo de un areá principal de parcela"@es ,
+                               "sampling status of a plot main area"@en .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#Shrub
@@ -1487,9 +1806,9 @@ FIA is the only NFI of the three which constructs these expliicitly. IFN (Invent
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#StandSizeClass
 :StandSizeClass rdf:type owl:Class ;
-                rdfs:subClassOf :PlotForestCommunityClassification ;
+                rdfs:subClassOf :PlotForestVegetationClassification ;
                 rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
-                skos:definition "classification of a forest community according to which diameter class most of its trees belong to."@en ;
+                skos:definition "classification of a forest vegetation according to which diameter class most of its trees belong to."@en ;
                 skos:note "The Spanish IFN notes down the three main species present at a plot and classifies those according to dimension. The dimension of the most dominant species is further used in this ontology."@en ;
                 skos:prefLabel "Dimensionsklassen"@de ,
                                "estado de diametro"@es ,
@@ -1532,11 +1851,38 @@ An NFI can choose to assign plots to  strata in 2 ways:
                             "área de estrato"@es .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#TemplateCluster
+:TemplateCluster rdf:type owl:Class ;
+                 rdfs:subClassOf geo:Feature ,
+                                 :InventoryScheme ;
+                 skos:definition "Vorlagencluster"@de ,
+                                 "a cluster of template plots, which are planned to be visited by the field crew. Has a scheduled location assigned to by an NFI specific procedure, often by a grid or by a random method. The scheduled location is its identity criterium."@en ;
+                 skos:note """The NFIs employ enumeration schemes from combinations of columns in the cluster data tables, which also should be unique. They don't serve as identity criterium because they could change in the future, but are used for minting IRIs.  
+
+The US FIA in the table PLOT uses the columns (STATECD, UNITCD, COUNTYCD, PLOT).  Remember that FIA names its clusters as plots. 
+
+The German BWI uses the column cluster_name in the cluster table. 
+
+For the Spanish IFN the crossforest ontology uses a combination of \"Provincia\" and  \"Estadillo\" colums which are used in many tables"""@en ;
+                 skos:prefLabel "acopiamiento de patrón"@es ,
+                                "template cluster"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#TemplatePlot
+:TemplatePlot rdf:type owl:Class ;
+              rdfs:subClassOf geo:Feature ,
+                              :InventoryScheme ;
+              skos:definition "A planning entity with location, which should to be visited by the field crew. It's originally scheduled location is implied  by the originally scheduled location of a template cluster and an NFI specific spatial pattern.  The originally scheduled location is its identity criterium."@en ,
+                              "Vorlagenplot"@de ,
+                              "parcela de patrón"@es ,
+                              "template plot"@en .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#TemporarilyNonStockedForest
 :TemporarilyNonStockedForest rdf:type owl:Class ;
                              rdfs:subClassOf :StandSizeClass ;
                              rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
-                             skos:definition "a community whose vegetation does not meet the criteria for forest, but is expected to do so in the future"@en ;
+                             skos:definition "a vegetation which now does not meet the criteria for forest, but did so in the past and  is expected to do so in the future"@en ;
                              skos:note """this can refer to an empty forest community, eg after a fire. Each plot classified as this has its own empty forest community (because it is an endurant). 
 
 the German NFI and the Spanish IFN classify the plot subarea in this way.  The BWI then includes the corresponding forest community in the weakest dimension class.  
@@ -1547,6 +1893,26 @@ for the latter it's not clear to the author how the data  some the vegetation (l
                              skos:prefLabel "Blöße"@de ,
                                             "monte arbolado temporalmente sin cobertura"@es ,
                                             "temporarily non-stocked forest"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#TemporarilyNonStockedForestArea
+:TemporarilyNonStockedForestArea rdf:type owl:Class ;
+                                 rdfs:subClassOf :ForestArea ;
+                                 skos:definition "Blöße"@de ,
+                                                 "monte arbolada temporalmente sin cobertura"@es ,
+                                                 """part of a total area on which a temporary non forest vegetation is stocking. 
+
+This implies that the vegetation on the area currently does not satisfy the criteria for  a forest vegetation, but did so in the past and is expected to do so in the future."""@en ,
+                                                 "temporarily non-stocked forest area"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#TemporarilyNonStockedForestPlotSubarea
+:TemporarilyNonStockedForestPlotSubarea rdf:type owl:Class ;
+                                        rdfs:subClassOf :ForestPlotSubarea ;
+                                        skos:definition "a forest area whose associated vegetation currently does'nt meet criteria for forest vegetation, but did so in the past and is expectet to do so in the future"@en ;
+                                        skos:prefLabel "Blöße"@de ,
+                                                       "monte arbolada temporalmente sin cobertura"@es ,
+                                                       "temporarily non-stocked forest"@en .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#TimberStand
@@ -1562,6 +1928,19 @@ The German BWI and the US FIA use a finer classification, but the Spanish IFN us
                             "timber stand"@en .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#TimedPosition
+:TimedPosition rdf:type owl:Class ;
+               rdfs:subClassOf :Position ,
+                               [ rdf:type owl:Restriction ;
+                                 owl:onProperty :inYear ;
+                                 owl:someValuesFrom xsd:integer
+                               ] ;
+               skos:prefLabel "a position that is valid for a timepoint"@en ,
+                              "posición temporizada"@es ,
+                              "timed position"@en ,
+                              "zeitlich festgelegte Position"@de .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#TotalArea
 :TotalArea rdf:type owl:Class ;
            rdfs:subClassOf :Region ;
@@ -1571,6 +1950,44 @@ The German BWI and the US FIA use a finer classification, but the Spanish IFN us
            skos:prefLabel "Gesamtfläche"@de ,
                           "total area"@en ,
                           "área total"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#TotalAreaForestVegetation
+:TotalAreaForestVegetation rdf:type owl:Class ;
+                           rdfs:subClassOf :TotalAreaVegetation ;
+                           skos:definition """part of an vegetation of an total area satisfying NFI-specific criteria.  Includes vegetation that currently doesn't satisfy the forest criteria, but did so in the past and is
+expected to do so in the future (temporarily non-stocked forest vegetation). 
+
+A reference definition oriented on the FAO: 
+Vegetation  with trees higher than 5 m or trees able to reach these thresholds in situ, such that it stocks on an area of a minimum width of 20 m and a minimum area size of 0.5 ha, having a canopy cover of at least 10 %.  This area cannot include land that is predominantly under agricultural or urban land use."""@en ;
+                           skos:note """The criteria for the single NFIs: 
+
+German BWI:  forest trees stocking on an area of at least 0.1 ha with a minimum width of 10 m and stocking on at least 50 % of that area. 
+
+US FIA:  forest trees stocking on an area of at least 1 acre  (~0.4 ha) with a minimum width of 120 feet (36.6 m) and stocking on  or covering at least 10 % of that area.
+
+Spanish IFN:  forest trees stocking on an area of which they cover at least 10 %.""" ;
+                           skos:prefLabel "Waldvegetation"@de ,
+                                          "forest vegetation"@en ,
+                                          "vegetación del bosque"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#TotalAreaTemporaryNonForestVegetation
+:TotalAreaTemporaryNonForestVegetation rdf:type owl:Class ;
+                                       rdfs:subClassOf :TotalAreaForestVegetation ;
+                                       skos:definition "Vegetation which currently does not satisfy the criteria for forest vegetation, but did so in the past and is expected to do so in the future"@en ;
+                                       skos:prefLabel "Vegetation einer Blöße"@de ,
+                                                      "temporary non forest vegetation"@en ,
+                                                      "vegetación temporalmente non bosque"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#TotalAreaVegetation
+:TotalAreaVegetation rdf:type owl:Class ;
+                     rdfs:subClassOf :Vegetation ;
+                     skos:prefLabel "Vegetation auf einer Gesamtfläche"@de ,
+                                    "community of plants found on an total area, including their remains."@en ,
+                                    "vegetación de un área total"@es ,
+                                    "vegetation on a total area"@en .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#Tree
@@ -1596,6 +2013,24 @@ Tomppo et al base point: On level terrain the base point is the point resulting 
             skos:prefLabel "Baumhöhe"@de ,
                            "altura de árbol"@es ,
                            "tree height"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#Vegetation
+:Vegetation rdf:type owl:Class ;
+            rdfs:subClassOf [ rdf:type owl:Restriction ;
+                              owl:onProperty geo:sfWithin ;
+                              owl:someValuesFrom :Region
+                            ] ,
+                            [ rdf:type owl:Restriction ;
+                              owl:onProperty :inYear ;
+                              owl:someValuesFrom xsd:integer
+                            ] ;
+            rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+            skos:broader "bfo : object aggregate (27)"@en ;
+            skos:definition "community of plants found in an area, including their remains."@en ;
+            skos:prefLabel "Vegetation"@de ,
+                           "vegetación"@es ,
+                           "vegetation"@en .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#WaterBody
@@ -1633,20 +2068,29 @@ The Spanish IFN and the US FIA have  a finer classification, but the German BWI 
                       "young stand"@en .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#SampledWithForest!
+<https://www.easi.uni-bayreuth.de/crossnfi#SampledWithForest!> rdf:type owl:Class ;
+                                                               rdfs:subClassOf :SampledCluster ;
+                                                               skos:definition "a cluster contains at least one plot main area with a forest plot subarea wich was sampled"@en ;
+                                                               skos:prefLabel "aufgenommen mit Wald"@de ,
+                                                                              "muestreado con bosque"@es ,
+                                                                              "sampled with forest"@en .
+
+
 #################################################################
 #    Individuals
 #################################################################
 
-###  https://www.easi.uni-bayreuth.de/crossnfi#invalid
-:invalid rdf:type owl:NamedIndividual ,
-                  :Invalid ;
-         rdfs:isDefinedBy "https://www.easi.uni-bayreuth.de/crossnfi"@en ;
-         skos:note """possible reasons are
+###  https://www.easi.uni-bayreuth.de/crossnfi#invalidPlot
+:invalidPlot rdf:type owl:NamedIndividual ,
+                      :InvalidPlot ;
+             rdfs:isDefinedBy "https://www.easi.uni-bayreuth.de/crossnfi"@en ;
+             skos:note """possible reasons are
 - its hypothetical location corresponds to the pattern of a cluster or grit, but is situated in non-inventory area or an area with a different sampling density. 
 - its at the location of a previous inventory instance, but was dropped in this instance for example because the cluster / plot density was dropped"""@en ;
-         skos:prefLabel "invalid"@en ,
-                        "inválido"@es ,
-                        "ungültig"@de .
+             skos:prefLabel "invalid"@en ,
+                            "inválido"@es ,
+                            "ungültig"@de .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#municipalOwner
@@ -1659,36 +2103,36 @@ The Spanish IFN and the US FIA have  a finer classification, but the German BWI 
                                "propietario municipal" .
 
 
-###  https://www.easi.uni-bayreuth.de/crossnfi#notAccessible
-:notAccessible rdf:type owl:NamedIndividual ,
-                        :NotAccessible ;
-               rdfs:isDefinedBy "https://www.easi.uni-bayreuth.de/crossnfi" ;
-               skos:definition "a plot subarea which was not sampled by the plot not being accessible."@en ;
-               skos:note "the reason can be difficult terrain, a temporar hazardous situation (storm throw or insect damage) or   legal access restriction of public (military) or private nature"@en ;
-               skos:prefLabel "nicht betretbar"@de ,
-                              "no accesible"@es ,
-                              "not accessible"@en .
+###  https://www.easi.uni-bayreuth.de/crossnfi#nonsampledPlot
+:nonsampledPlot rdf:type owl:NamedIndividual ,
+                         :NonsampledPlot ;
+                skos:definition "a plot main area which was not sampled"@en ;
+                skos:note "this includes plot subareas that fall under the umbrella of \"other reason\" classifications"@en ;
+                skos:prefLabel "nicht erfasst"@de ,
+                               "no muestrada"@es ,
+                               "not sampled"@en .
 
 
-###  https://www.easi.uni-bayreuth.de/crossnfi#notSampled
-:notSampled rdf:type owl:NamedIndividual ,
-                     :NotSampled ;
-            skos:definition "a plot subarea which was not sampled"@en ;
-            skos:note "this includes plot subareas that fall under the umbrella of \"other reason\" classifications"@en ;
-            skos:prefLabel "nicht erfasst"@de ,
-                           "no muestrada"@es ,
-                           "not sampled"@en .
+###  https://www.easi.uni-bayreuth.de/crossnfi#notAccessiblePlot
+:notAccessiblePlot rdf:type owl:NamedIndividual ,
+                            :NotAccessiblePlot ;
+                   rdfs:isDefinedBy "https://www.easi.uni-bayreuth.de/crossnfi" ;
+                   skos:definition "a plot main area which was not sampled by the plot not being accessible."@en ;
+                   skos:note "the reason can be difficult terrain, a temporar hazardous situation (storm throw or insect damage) or   legal access restriction of public (military) or private nature"@en ;
+                   skos:prefLabel "nicht betretbar"@de ,
+                                  "no accesible"@es ,
+                                  "not accessible"@en .
 
 
-###  https://www.easi.uni-bayreuth.de/crossnfi#organizationallyImpossible
-:organizationallyImpossible rdf:type owl:NamedIndividual ,
-                                     :OrganizationallyImpossible ;
-                            rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
-                            skos:definition "a plot subarea which was not sampled for organizational reasons"@en ;
-                            skos:note "Possible reasons are lack of time in in a fixed timeslot,  loss of data, rescheduling for a later sampling"@en ;
-                            skos:prefLabel "imposible organizadormente"@es ,
-                                           "organisatorisch unmöglich"@de ,
-                                           "organizationally impossible"@en .
+###  https://www.easi.uni-bayreuth.de/crossnfi#organizationallyImpossiblePlot
+:organizationallyImpossiblePlot rdf:type owl:NamedIndividual ,
+                                         :OrganizationallyImpossiblePlot ;
+                                rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                                skos:definition "a plot main area which was not sampled for organizational reasons"@en ;
+                                skos:note "Possible reasons are lack of time in in a fixed timeslot,  loss of data, rescheduling for a later sampling"@en ;
+                                skos:prefLabel "imposible organizadormente"@es ,
+                                               "organisatorisch unmöglich"@de ,
+                                               "organizationally impossible"@en .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#privateOwner
@@ -1700,14 +2144,14 @@ The Spanish IFN and the US FIA have  a finer classification, but the German BWI 
                              "propietario privado"@es .
 
 
-###  https://www.easi.uni-bayreuth.de/crossnfi#sampled
-:sampled rdf:type owl:NamedIndividual ,
-                  :Sampled ;
-         rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
-         skos:definition "a forest plot subarea that was sampled"@en ;
-         skos:prefLabel "erfasst"@de ,
-                        "muestrada"@es ,
-                        "sampled"@en .
+###  https://www.easi.uni-bayreuth.de/crossnfi#sampledPlot
+:sampledPlot rdf:type owl:NamedIndividual ,
+                      :SampledPlot ;
+             rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+             skos:definition "a plot main area that was sampled"@en ;
+             skos:prefLabel "erfasst"@de ,
+                            "muestrada"@es ,
+                            "sampled"@en .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#stateOwner
@@ -1733,4 +2177,4 @@ The Spanish IFN and the US FIA have  a finer classification, but the German BWI 
 :PublicOwner skos:prefLabel "propietario estatal" .
 
 
-###  Generated by the OWL API (version 4.5.29.2024-05-13T12:11:03Z) https://github.com/owlcs/owlapi
+###  Generated by the OWL API (version 4.5.25.2023-02-15T19:15:49Z) https://github.com/owlcs/owlapi
