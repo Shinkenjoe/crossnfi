@@ -1,3 +1,11 @@
 [workspace]
 resolver = "3"
-members = []
+members = ["derive_nfi_columns"]
+
+[workspace.package]
+version = 0.1
+authors = ["Simon Mayer"]
+description = "Make implicit NFI data explicit for crossnfi"
+
+[workspace.dependencies]
+

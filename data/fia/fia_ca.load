@@ -1,0 +1,31 @@
+-- config file for pgloader to load a fia state sqlite Pdatabase into 
+-- an aptly named postgres schema with working role permissions
+
+LOAD DATABASE
+     FROM sqlite:///home/shinken/comp/thesis/data/fia/SQLite_FIADB_CA.db
+     INTO postgresql:///crossnfi
+
+WITH include drop, 
+     create tables, 
+     create indexes, 
+     reset sequences, 
+     prefetch rows = 1000
+
+SET  work_mem to '16MB', 
+     maintenance_work_mem to '512MB',
+     search_path TO 'fia_ca',
+     role TO 'ddl_admin'
+ 
+BEFORE LOAD DO
+     $$ ALTER DEFAULT PRIVILEGES IN SCHEMA fia_ca
+          GRANT SELECT ON TABLES TO users; $$,
+     $$  ALTER DEFAULT PRIVILEGES IN SCHEMA fia_ca
+          GRANT INSERT, UPDATE, DELETE ON TABLES TO devs; $$
+
+
+     -- Type casting rules (handles SQLite's loose typing) 
+CAST type int when (= precision 1) to boolean using tinyint-to-boolean,
+     type text to varchar drop not null using remove-null-characters
+     -- Converts SQLite's 0/1 integers to PostgreSQL booleans
+     -- Strips null bytes that SQLite allows but PostgreSQL rejects
+;

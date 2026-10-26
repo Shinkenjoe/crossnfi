@@ -1,0 +1,41 @@
+[PrefixDeclaration]
+:		https://www.easi.uni-bayreuth.de/crossnfi#
+sh:		http://www.w3.org/ns/shacl#
+geo:		http://www.opengis.net/ont/geosparql#
+owl:		http://www.w3.org/2002/07/owl#
+rdf:		http://www.w3.org/1999/02/22-rdf-syntax-ns#
+xml:		http://www.w3.org/XML/1998/namespace
+xsd:		http://www.w3.org/2001/XMLSchema#
+obda:		https://w3id.org/obda/vocabulary#
+qudt:		http://qudt.org/schema/qudt/
+rdfs:		http://www.w3.org/2000/01/rdf-schema#
+skos:		http://www.w3.org/2004/02/skos/core#
+unit:		http://qudt.org/vocab/unit/
+dcterms:		http://purl.org/dc/terms/
+
+[MappingDeclaration] @collection [[
+mappingId	bwi-template-cluster
+target		:bwi/TemplateCluster/{cluster_name} a :TemplateCluster . 
+source		SELECT * FROM inventory_archive.cluster WHERE NOT is_training;
+
+mappingId	bwi-cluster-area-set
+target		:bwi/ClusterAreaSet/{cluster_name} a :ClusterAreaSet ; :implements :bwi/TemplateCluster/{cluster_name} . 
+source		SELECT * FROM inventory_archive.cluster WHERE NOT is_training;
+
+mappingId	bwi-cluster-area-set-nonsampledOnlyNonForest
+target		:bwi/ClusterAreaSet/{cluster_name} :hasClusterSamplingStatus :nonsampledOnlyNonforest . 
+source		SELECT * FROM inventory_archive.cluster WHERE NOT is_training and not cluster_situation = 1 and cluster_status in (4, 5);
+
+mappingId	fia-template-cluster
+target		:fia/TemplateCluster/{statecd}_{unitcd}_{countycd}_{plot} a :TemplateCluster . 
+source		SELECT * FROM fia_ca.plot;
+
+mappingId	bwi:Tree
+target		:bwi/Tree/{cluster_name}_{plot_name}_{tree_number} a :Tree . 
+source		select p.cluster_name, p.plot_name, t.tree_number, 
+			       t.tree_species , t.dbh  
+			       from  inventory_archive.tree t 
+			      join inventory_archive.plot p
+			on p.id = t.plot_id
+]]
+

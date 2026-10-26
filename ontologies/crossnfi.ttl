@@ -5,6 +5,7 @@
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xml: <http://www.w3.org/XML/1998/namespace> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix obda: <https://w3id.org/obda/vocabulary#> .
 @prefix qudt: <http://qudt.org/schema/qudt/> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
@@ -243,6 +244,18 @@ entities for which there is data to be found at a plot. These entities are sampl
                            "tiene azimuth"@es .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#hasClusterSamplingStatus
+:hasClusterSamplingStatus rdf:type owl:ObjectProperty ;
+                          rdfs:subPropertyOf :isClassifiedAs ;
+                          owl:inverseOf :isClusterSamplingStatusOf ;
+                          rdfs:domain :ClusterAreaSet ;
+                          rdfs:range :ClusterAreaSetSamplingStatus ;
+                          skos:definition "relates a plot main area to its plot sampling status classification" ;
+                          skos:prefLabel "has cluster sampling status"@en ,
+                                         "hat Cluster-Erfassungszustand"@de ,
+                                         "tiene estado de muestreo de acopiamiento"@es .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#hasCount
 :hasCount rdf:type owl:ObjectProperty ;
           rdfs:subPropertyOf :hasQuality ;
@@ -347,6 +360,19 @@ entities for which there is data to be found at a plot. These entities are sampl
                                 "tiene plot asignado"@es .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#hasPlotSamplingStatus
+:hasPlotSamplingStatus rdf:type owl:ObjectProperty ;
+                       rdfs:subPropertyOf :isClassifiedAs ;
+                       owl:inverseOf :isPlotSamplingStatusOf ;
+                       rdfs:domain :PlotMainArea ;
+                       rdfs:range :PlotMainAreaSamplingStatus ;
+                       rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                       skos:definition "relates a plot main area to its plot sampling status classification"@en ;
+                       skos:prefLabel "has plot sampling status"@en ,
+                                      "hat Plot-Erfassungszustand"@de ,
+                                      "tiene estado de muestreo de parcela"@es .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#hasQuality
 :hasQuality rdf:type owl:ObjectProperty ;
             rdfs:subPropertyOf owl:topObjectProperty ;
@@ -370,18 +396,6 @@ entities for which there is data to be found at a plot. These entities are sampl
                                       "tiene posición de referencia"@es ;
                       skos:note """For many features like most plot main areas or sample areas this is the central point of a circle, for other features like the German BWI 's cluster area set it is the northwest
 plot main area's reference position."""@en .
-
-
-###  https://www.easi.uni-bayreuth.de/crossnfi#hasSamplingStatus
-:hasSamplingStatus rdf:type owl:ObjectProperty ;
-                   rdfs:subPropertyOf :isClassifiedAs ;
-                   rdfs:domain :PlotSubArea ;
-                   rdfs:range :PlotMainAreaSamplingStatus ;
-                   rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
-                   skos:definition "relates a plot subarea to its sampling status classification"@en ;
-                   skos:prefLabel "has sampling status"@en ,
-                                  "hat Erfassungszustand"@de ,
-                                  "tiene estado de muestreo"@es .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#hasScheduled
@@ -453,6 +467,17 @@ Likewise a plot main area implements a template plot, if its central position is
                                "ist klassifiziert als"@de .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#isClusterSamplingStatusOf
+:isClusterSamplingStatusOf rdf:type owl:ObjectProperty ;
+                           rdfs:subPropertyOf :classifies ;
+                           rdfs:domain :ClusterAreaSetSamplingStatus ;
+                           rdfs:range :ClusterAreaSet ;
+                           skos:definition "relates a cluster sampling status classification to a cluster area set with the corresponding sampling status"@en ;
+                           skos:prefLabel "es estado de muestreo de acopiamiento de"@es ,
+                                          "is cluster sampling status of"@en ,
+                                          "ist Cluster-Erfassungszustand vor"@de .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#isImplementedBy
 :isImplementedBy rdf:type owl:ObjectProperty ;
                  rdfs:domain :InventoryScheme ;
@@ -521,6 +546,18 @@ Range: a sample or data collections like a national forest inventory, a cluster 
                                            "ist Ort der Datenaufnahme von"@de .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#isPlotSamplingStatusOf
+:isPlotSamplingStatusOf rdf:type owl:ObjectProperty ;
+                        rdfs:subPropertyOf :classifies ;
+                        rdfs:domain :PlotMainAreaSamplingStatus ;
+                        rdfs:range :PlotMainArea ;
+                        rdfs:isDefinedBy "https://www.easi.uni-bayreuth.de/crossnfi" ;
+                        skos:definition "relates a plot sampling status classification to a plot main area with the corresponding sampling status"@en ;
+                        skos:prefLabel "es estado de muestreo de parcela de"@es ,
+                                       "is  plot sampling status of"@en ,
+                                       "ist Plot-Erfassungszustand von"@de .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#isQualityOf
 :isQualityOf rdf:type owl:ObjectProperty ;
              rdfs:domain :Quality ;
@@ -529,19 +566,6 @@ Range: a sample or data collections like a national forest inventory, a cluster 
              skos:prefLabel "es calidad de"@es ,
                             "is quality of"@en ,
                             "ist Qualität von"@de .
-
-
-###  https://www.easi.uni-bayreuth.de/crossnfi#isSamplingStatusOf
-:isSamplingStatusOf rdf:type owl:ObjectProperty ;
-                    rdfs:subPropertyOf :classifies ;
-                    owl:inverseOf :isSamplingStatusOf ;
-                    rdfs:domain :PlotMainAreaSamplingStatus ;
-                    rdfs:range :PlotSubArea ;
-                    rdfs:isDefinedBy "https://www.easi.uni-bayreuth.de/crossnfi" ;
-                    skos:definition "relates a sampling status classification to a plot subarea with the corresponding sampling status"@en ;
-                    skos:prefLabel "es estado de muestreo de"@es ,
-                                   "is sampling status of"@en ,
-                                   "ist Erfassungszustand von"@de .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#isStageFor
@@ -1062,6 +1086,8 @@ total area the plot is contained in. Thus its vegetation usually is forest veget
                                "ungültig"@de .
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
 =======
 ###  https://www.easi.uni-bayreuth.de/crossnfi#invalidCluster
 :invalidCluster rdf:type :InvalidCluster ;
@@ -1075,6 +1101,10 @@ total area the plot is contained in. Thus its vegetation usually is forest veget
 
 
 >>>>>>> 6d19629 (GeoSPARQL, template plots and clusters, plot main area, classific.)
+=======
+>>>>>>> db3c01d (database schema dump and loading scripts)
+=======
+>>>>>>> db3c01d (database schema dump and loading scripts)
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#InvalidPlot
 :InvalidPlot rdf:type owl:Class ;
@@ -1276,20 +1306,15 @@ In Germany often identical with NUTS1."""@en ;
                                         "solo no bosque"@es .
 <<<<<<< HEAD
 
+<<<<<<< HEAD
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#NonsampledPlot
 :NonsampledPlot rdf:type owl:Class ;
                 rdfs:subClassOf :SamplingStatus ;
 =======
 
-###  https://www.easi.uni-bayreuth.de/crossnfi#nonsampledOnlyNonForest
-:nonsampledOnlyNonForest rdf:type :NonsampledOnlyNonForest ;
-                         skos:definition "a cluster area set which was not sampled as it was obvious beforehand that it contained only non-forest"@en ;
-                         skos:prefLabel "nur Nicht-Wald"@de ,
-                                        "only non forest"@en ,
-                                        "solo no bosque"@es .
-
-
+=======
+>>>>>>> db3c01d (database schema dump and loading scripts)
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#NonsampledPlot
 :NonsampledPlot rdf:type owl:Class ;
@@ -1534,7 +1559,7 @@ Generally there is no explicit definition, but it generally is the circle area o
 ###  https://www.easi.uni-bayreuth.de/crossnfi#PlotMainAreaSamplingStatus
 :PlotMainAreaSamplingStatus rdf:type owl:Class ;
                             owl:equivalentClass [ rdf:type owl:Restriction ;
-                                                  owl:onProperty :isSamplingStatusOf ;
+                                                  owl:onProperty :isPlotSamplingStatusOf ;
                                                   owl:someValuesFrom :PlotMainArea
                                                 ] ;
                             rdfs:subClassOf :PlotMainAreaClassification ;
@@ -2167,6 +2192,18 @@ The Spanish IFN and the US FIA have  a finer classification, but the German BWI 
 #    Individuals
 #################################################################
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#invalidCluster
+:invalidCluster rdf:type owl:NamedIndividual ,
+                         :InvalidCluster ;
+                skos:definition "all the cluster area set's  plot main  area are not valid"@en ,
+                                "inválido"@es ;
+                skos:note """possible reasons are
+- all the cluster is in non-inventory area 
+- its at the location of a previous inventory instance, but was dropped in this instance for example because the cluster / plot density was dropped"""@en ;
+                skos:prefLabel "invalid"@en ,
+                               "ungültig"@de .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#invalidPlot
 :invalidPlot rdf:type owl:NamedIndividual ,
                       :InvalidPlot ;
@@ -2227,6 +2264,15 @@ The Spanish IFN and the US FIA have  a finer classification, but the German BWI 
                                    "nicht erfasst"@de ,
                                    "no muestrada"@es ,
                                    "nonsampled"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#nonsampledOnlyNonForest
+:nonsampledOnlyNonForest rdf:type owl:NamedIndividual ,
+                                  :NonsampledOnlyNonForest ;
+                         skos:definition "a cluster area set which was not sampled as it was obvious beforehand that it contained only non-forest"@en ;
+                         skos:prefLabel "nur Nicht-Wald"@de ,
+                                        "only non forest"@en ,
+                                        "solo no bosque"@es .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#nonsampledPlot
