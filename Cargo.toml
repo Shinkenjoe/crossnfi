@@ -1,11 +1,11 @@
 [workspace]
 resolver = "3"
-members = ["derive_nfi_columns"]
+members = ["crossnfi_utils"]
 
 [workspace.package]
-version = 0.1
+version = "0.1.0"
 authors = ["Simon Mayer"]
 description = "Make implicit NFI data explicit for crossnfi"
 
 [workspace.dependencies]
-
+tokio = { version = "1" , features = ["rt-multi-thread", "macros"]}

@@ -1,0 +1,13 @@
+[package]
+name = "crossnfi_utils"
+edition = "2024"
+version.workspace = true
+authors.workspace = true
+description.workspace = true
+
+[dependencies]
+tokio-postgres = { version = "0.7.18" }
+tokio = { workspace = true } 
+
+[dev-dependencies]
+rstest = { version = "0.28.0" }
