@@ -32,10 +32,10 @@ source		SELECT * FROM fia_ca.plot;
 
 mappingId	bwi:Tree
 target		:bwi/Tree/{cluster_name}_{plot_name}_{tree_number} a :Tree . 
-source		select p.cluster_name, p.plot_name, t.tree_number, 
-			       t.tree_species , t.dbh  
-			       from  inventory_archive.tree t 
-			      join inventory_archive.plot p
+source		select p.cluster_name, p.plot_name, t.tree_number,
+			t.tree_species , t.dbh
+			from  inventory_archive.tree t
+			join inventory_archive.plot p
 			on p.id = t.plot_id
 ]]
 
