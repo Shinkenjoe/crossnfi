@@ -2,7 +2,7 @@ use std::fs;
 use std::io::Read;
 use std::path::{PathBuf};
 use tokio::task::JoinHandle;
-use tokio_postgres::{connect, NoTls, Client};
+use tokio_postgres::{connect, NoTls, Client };
 //use tokio_postgres::row::Row;
 // use std::any::Any;
 
@@ -16,9 +16,15 @@ mod bwi;
 pub struct TableNames {    
     schema_name: String, 
     table_name: String, 
+    /// name of the column holding the cluster identifier
     cluster_column: Option<String>, 
+    /// name of the column holding the plot identifier
     plot_column: Option<String>, 
+    /// name of the column holding the year (either to be created or existant in the table) 
     year_column: Option<String>, 
+    /// name for either
+    /// - the column holding the codes for the case that the plot moved
+    /// - the column from which the year was extracted
     source_column: Option<String>, 
 }
 
@@ -26,14 +32,174 @@ pub struct TableNames {
 
 
 
-/// identify plot or cluster installment - initialization phase
+/// identify plot or cluster implementation - initialization phase
 
 
-async fn installment_identification(
+pub async fn implementation_identification(
     client: &Client,
     table_names: TableNames,
     plot_movement_codes: Vec<i32>, )
     -> Result<u64, Box<dyn std::error::Error + Send + Sync + 'static>> {
+
+    // boolean for if we are identifying cluster or plot implementations
+    // cluster implementations identification will be implemented 
+    // only in a later version, if at all
+    let _cluster_only = table_names.plot_column.is_none();
+
+    // explode table_names
+    let TableNames { 
+        schema_name : schema, 
+        table_name  : table, 
+        cluster_column , 
+        plot_column, 
+        year_column, 
+        source_column } = table_names;
+    let cluster = cluster_column.expect("no cluster_name given");
+    let plot = plot_column.expect("no plot_name given");
+    let year = year_column.expect("no year_column given");
+    let plot_moved = source_column.expect("no column for plot moved codes given");
+    let implementation = "implementation";
+
+
+    // SQL list string to test for plot movement. Like "( 4 )" or "( 6, 7 )"
+    if plot_movement_codes.is_empty() {
+        return Err("plot movement codes not given".into()); 
+    }
+    let mut plot_move_codes = format!("( {}", plot_movement_codes[0]);
+    for code in plot_movement_codes.iter().skip(1) {
+        let code_string = format!(", {}", code);
+        plot_move_codes.push_str(&code_string);
+    }
+    plot_move_codes.push_str(" )");
+    
+    // drop and create the column for holding the implementations
+    let drop_query = format!(
+        "alter table {schema}.{table} 
+             drop column if exists {implementation};;");
+    client.execute(&drop_query, &[]).await?;
+    
+    let create_query = format!(
+        "alter table {schema}.{table} 
+             add column {implementation} integer;");
+    client.execute(&create_query, &[]).await?;
+
+    
+    // pre loop initialization
+    // create a luy temporary table in which for each plot template the earliest year 
+    // is noted, which has no implementation identification. 
+    // in the first run befor the loop this includes the plots, 
+    // where the plot has moved
+    
+    let luy_query = format!(
+        "create temporary table least_unimplemented_year as
+         (select m.{cluster}, m.{plot}, min({year}) luy 
+          from {schema}.{table} m
+          where m.{implementation} is null
+          group by m.{cluster}, m.{plot});");
+    client.execute(&luy_query, &[]).await?;
+
+    // set the first implementation as the one in the years as defined 
+    // in the luy temporary table
+    
+    let set_luy_query = format!(
+        "update {schema}.{table} m
+ 	set {implementation} = 1
+	from least_unimplemented_year l
+	where m.{cluster} = l.{cluster} and  
+   	m.{plot} = l.{plot} and 
+   	m.{year} = l.luy;"
+    );
+    client.execute(&set_luy_query, &[]).await?;
+    
+    // count how many unimplemented datasets are left
+    let unimplemented_query = format!(
+        "select count(*)
+         from {schema}.{table} 
+         where {implementation} is null;
+         "
+    );
+    let mut unimplemented : i64  = client.query_one_scalar::<i64, String>(
+        &unimplemented_query, 
+        &[],
+    ) .await?.into();
+
+    // loop until there are no more plot dataset not aligned to a 
+    // plot template implementation 
+
+    while unimplemented > 0 {
+
+        // drop luy table query, for recalculating luy
+        let drop_luy_table_query = "drop table if exists least_unimplemented_year;";
+        client.execute(drop_luy_table_query, &[]).await?;
+        
+        // least unimplemented year query can be reused from above
+        client.execute(luy_query.as_str(), &[]).await?;
+
+        // drop giy table query, for recalculating giy
+        let drop_giy_table_query = "drop table if exists greatest_implemented_year;";
+        client.execute(drop_giy_table_query, &[]).await?;
+
+        // create a temporary table which holds for each plot template the latest year
+        // for which there exists an implementation
+        let giy_query = format!(
+            "create temporary table greatest_implemented_year as
+             (select m.{cluster}, m.{plot}, max({year}) giy, max({implementation}) imp
+              from {schema}.{table} m
+    	      where {implementation} is not null
+              group by m.{cluster}, m.{plot});");    
+        client.execute(&giy_query, &[]).await?;
+
+        // drop assign_prev_implementation table query, for recalculating 
+        let drop_assign_prev_inst_table_query = "
+                          drop table if exists assign_prev_implementation;";
+        client.execute(drop_assign_prev_inst_table_query, &[]).await?;
+
+        // create a temporary table, where for each template plot's dataset 
+        // with the least unimplemented year, you find the implementation of 
+        // the dataset with the greatest implemented year 
+        let assign_prev_implementation_query = format!(
+            "create temporary table assign_prev_implementation as
+	     (select m.{cluster}, m.{plot}, m.{year}, giy.imp
+	      from {schema}.{table} m 
+	      join greatest_implemented_year giy 
+	        on m.{cluster} = giy.{cluster} and 
+   	        m.{plot}  = giy.{plot}
+	      join least_unimplemented_year luy
+	         on m.{cluster} = luy.{cluster} and 
+   	         m.{year} = luy.luy and 
+      	        m.{plot} = luy.{plot});");
+        client.execute(&assign_prev_implementation_query, &[]).await?;
+
+        // write the matchup found above into every dataset with a template plot's
+        // least unimplemented year. 
+        let set_prev_implementation_query = format!(
+            "update {schema}.{table} m 
+	     set {implementation} = api.imp
+  	    from assign_prev_implementation api
+ 	    where m.{cluster} = api.{cluster} and 
+   		  m.{plot} = api.{plot} and 
+		  m.{year} = api.{year};
+            ");
+        client.execute(&set_prev_implementation_query, &[]).await?;
+    
+        // from the last edited datasets identify those 
+        // which have a code for a plot move, 
+        // mark the creation of a new plot main area  implementing this template plot 
+        // by incrementing the implementation count. 
+        let create_new_implementation_query = format!(
+            "update {schema}.{table} m
+	     set {implementation} = {implementation} + 1
+             from assign_prev_implementation api
+             where m.{cluster} = api.{cluster} and 
+   	       m.{plot} = api.{plot} and 
+      	       m.{year} = api.{year} and  
+               m.{plot_moved} in  {plot_move_codes};");
+        client.execute(&create_new_implementation_query, &[]).await?;
+    
+        // see how many unimplemented datasets are left
+        unimplemented = client.query_one_scalar::<i64, String>(&unimplemented_query, &[])
+            .await?.into();
+    }    
     
     Ok(0)
 }
@@ -52,7 +218,7 @@ struct ConnectionParameters {
 /// # Returns
 /// The `tokio_postgres::Client` handle and the `JoinHandle` for the resource
 /// managing task running in the background. 
-async fn connect_crossnfi() -> Result<(Client, JoinHandle<()>),
+pub async fn connect_crossnfi() -> Result<(Client, JoinHandle<()>),
                                        Box<dyn std::error::Error + 'static>> {
     let conn_param = read_connection_parameters();
     let conn_string = format!("user={} password={} dbname={} host=localhost", 
@@ -114,14 +280,14 @@ mod tests {
         read_connection_parameters()
     }
     
-
+    #[allow(unused_variables)]
     async fn install_test_database_query(conn_params : &ConnectionParameters) {
-        let (client, conn_handle) = connect_crossnfi().await.
+        let (client, _conn_handle) = connect_crossnfi().await.
             expect("Could not connect");
         let mut test_data_sql = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         test_data_sql.push(PathBuf::from("data/test/create_test_data.sql"));
         let mut test_dump = String::new();
-        let bytes_read = fs::File::open(test_data_sql)
+        let _bytes_read = fs::File::open(test_data_sql)
             .expect("Couldn't open test sql dump")
             .read_to_string(&mut test_dump)
             .expect("Couldn't read test sql dump");
@@ -129,12 +295,12 @@ mod tests {
             .map(|s| s.to_string())
             .collect::<Vec<String>>();
         for statement in statements {
-            let rows_affected = client.execute(statement.as_str(), &[]).await
+            let _rows_affected = client.execute(statement.as_str(), &[]).await
                 .expect("Loading test dump did not work");
         }
        
 
-        let result = client.query("SELECT * FROM test.mplot;", &[]).await.unwrap();
+        let _result = client.query("SELECT * FROM test.mplot;", &[]).await.unwrap();
 
 
     }
@@ -149,6 +315,7 @@ mod tests {
 
     #[fixture]
     async fn connect_testdb(install_test_database: &i32) -> Client {
+        assert_eq!(*install_test_database, 3);
         connect_crossnfi().await.
             expect("Could not connect to testdb").0
     }
@@ -187,27 +354,29 @@ mod tests {
     
     #[rstest]
     #[tokio::test]
-    async fn test_create_installments(connect_testdb : impl Future<Output = Client>) {
+    async fn test_create_implementations(connect_testdb : impl Future<Output = Client>) {
         let client = connect_testdb.await;
         let table_names = TableNames { 
             schema_name: "test".to_string(), 
             table_name: "mplot".to_string(), 
             cluster_column: Some("cluster_name".to_string()), 
             plot_column: Some("plot_name".to_string()), 
-            year_column: Some("inv_year".to_string()),
-            source_column: Some("interval_name".to_string()),
+            year_column: Some("test_year".to_string()),
+            source_column: Some("marker_status".to_string()),
         };
-        
+        let plot_movement_codes = vec![4,5];
+        implementation_identification(&client, table_names, plot_movement_codes).await
+            .expect("something went wrong at identifying implementations");
         
         let rows = client.query(
-            "select m.installement, m.expected_installment
+            "select m.implementation, m.expected_implementation
              from test.mplot m;", &[])
-        .await.expect("could not query test db after col creation");
+        .await.expect("could not query test db after col creation");        
         for row in rows {
             let orig : i32 = row.get(0);
             let deriv : i32 = row.get(1);
-            assert_eq!(orig, orig);
+            assert_eq!(orig, deriv);
         }
-
+        
     }
 }

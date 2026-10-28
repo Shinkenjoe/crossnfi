@@ -1,8 +1,8 @@
-use crate::read_connection_parameters;
-use tokio_postgres::{ connect, NoTls, Client}; 
+use tokio_postgres::{ Client }; 
 use super::TableNames;
 
-pub(crate) async fn create_year_column(client: &Client, table_names: TableNames)
+#[allow(unused)]
+pub async fn create_year_column(client: &Client, table_names: TableNames)
                             -> Result<u64, Box<dyn std::error::Error + Send + Sync + 'static>> {
     let drop_query = format!(
         "alter table {schema}.{table} 
