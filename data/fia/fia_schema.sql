@@ -1,18 +1,17 @@
 -- create a schema in potsgres to load a fia state database into
 
 
-DROP SCHEMA IF EXISTS fia_ca CASCADE;
-CREATE SCHEMA fia_ca; 
+DROP SCHEMA IF EXISTS fia CASCADE;
+CREATE SCHEMA fia; 
 GRANT USAGE, CREATE 
-    ON SCHEMA fia_ca 
+    ON SCHEMA fia 
     TO ddl_admin;
 
-GRANT USAGE ON SCHEMA fia_ca TO  users;
-ALTER SCHEMA fia_ca OWNER TO ddl_admin;
+GRANT USAGE ON SCHEMA fia TO  users;
+ALTER SCHEMA fia OWNER TO ddl_admin;
 
-ALTER DEFAULT PRIVILEGES IN SCHEMA fia_ca
+ALTER DEFAULT PRIVILEGES IN SCHEMA fia
   GRANT SELECT ON TABLES TO users;
-ALTER DEFAULT PRIVILEGES IN SCHEMA fia_ca
+ALTER DEFAULT PRIVILEGES IN SCHEMA fia
   GRANT INSERT,UPDATE,DELETE ON TABLES TO devs;
 
-ALTER DATABASE fia SET search_path to fia_ca, public;

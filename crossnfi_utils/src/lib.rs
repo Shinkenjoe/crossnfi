@@ -6,7 +6,7 @@ use tokio_postgres::{connect, NoTls, Client };
 //use tokio_postgres::row::Row;
 // use std::any::Any;
 
-mod bwi;
+pub mod bwi;
 
 
 /// specifies the names of tables and columns to be modified by
@@ -14,18 +14,18 @@ mod bwi;
 
 #[derive(Default, Debug)]
 pub struct TableNames {    
-    schema_name: String, 
-    table_name: String, 
+    pub schema_name: String, 
+    pub table_name: String, 
     /// name of the column holding the cluster identifier
-    cluster_column: Option<String>, 
+    pub cluster_columns: Vec<String>, 
     /// name of the column holding the plot identifier
-    plot_column: Option<String>, 
+    pub plot_column: Option<String>, 
     /// name of the column holding the year (either to be created or existant in the table) 
-    year_column: Option<String>, 
+    pub year_column: Option<String>, 
     /// name for either
     /// - the column holding the codes for the case that the plot moved
     /// - the column from which the year was extracted
-    source_column: Option<String>, 
+    pub source_column: Option<String>, 
 }
 
 
@@ -41,25 +41,20 @@ pub async fn implementation_identification(
     plot_movement_codes: Vec<i32>, )
     -> Result<u64, Box<dyn std::error::Error + Send + Sync + 'static>> {
 
-    // boolean for if we are identifying cluster or plot implementations
-    // cluster implementations identification will be implemented 
-    // only in a later version, if at all
-    let _cluster_only = table_names.plot_column.is_none();
-
     // explode table_names
     let TableNames { 
         schema_name : schema, 
         table_name  : table, 
-        cluster_column , 
+        cluster_columns , 
         plot_column, 
         year_column, 
         source_column } = table_names;
-    let cluster = cluster_column.expect("no cluster_name given");
-    let plot = plot_column.expect("no plot_name given");
     let year = year_column.expect("no year_column given");
     let plot_moved = source_column.expect("no column for plot moved codes given");
     let implementation = "implementation";
 
+    let (cluster_plot, join_plot, luy_join_plot) = 
+        create_cluster_plot_sql_fragments(cluster_columns,plot_column);
 
     // SQL list string to test for plot movement. Like "( 4 )" or "( 6, 7 )"
     if plot_movement_codes.is_empty() {
@@ -92,10 +87,10 @@ pub async fn implementation_identification(
     
     let luy_query = format!(
         "create temporary table least_unimplemented_year as
-         (select m.{cluster}, m.{plot}, min({year}) luy 
+         (select {cluster_plot}, min({year}) luy 
           from {schema}.{table} m
           where m.{implementation} is null
-          group by m.{cluster}, m.{plot});");
+          group by {cluster_plot});");
     client.execute(&luy_query, &[]).await?;
 
     // set the first implementation as the one in the years as defined 
@@ -104,10 +99,9 @@ pub async fn implementation_identification(
     let set_luy_query = format!(
         "update {schema}.{table} m
  	set {implementation} = 1
-	from least_unimplemented_year l
-	where m.{cluster} = l.{cluster} and  
-   	m.{plot} = l.{plot} and 
-   	m.{year} = l.luy;"
+	from least_unimplemented_year o
+	where {join_plot} and 
+   	m.{year} = o.luy;"
     );
     client.execute(&set_luy_query, &[]).await?;
     
@@ -143,10 +137,10 @@ pub async fn implementation_identification(
         // for which there exists an implementation
         let giy_query = format!(
             "create temporary table greatest_implemented_year as
-             (select m.{cluster}, m.{plot}, max({year}) giy, max({implementation}) imp
+             (select {cluster_plot}, max({year}) giy, max({implementation}) imp
               from {schema}.{table} m
     	      where {implementation} is not null
-              group by m.{cluster}, m.{plot});");    
+              group by {cluster_plot});");    
         client.execute(&giy_query, &[]).await?;
 
         // drop assign_prev_implementation table query, for recalculating 
@@ -159,26 +153,23 @@ pub async fn implementation_identification(
         // the dataset with the greatest implemented year 
         let assign_prev_implementation_query = format!(
             "create temporary table assign_prev_implementation as
-	     (select m.{cluster}, m.{plot}, m.{year}, giy.imp
+	     (select {cluster_plot}, m.{year}, o.imp
 	      from {schema}.{table} m 
-	      join greatest_implemented_year giy 
-	        on m.{cluster} = giy.{cluster} and 
-   	        m.{plot}  = giy.{plot}
+	      join greatest_implemented_year o 
+	        on {join_plot}
 	      join least_unimplemented_year luy
-	         on m.{cluster} = luy.{cluster} and 
-   	         m.{year} = luy.luy and 
-      	        m.{plot} = luy.{plot});");
+                 on {luy_join_plot} and 
+   	         m.{year} = luy.luy);");
         client.execute(&assign_prev_implementation_query, &[]).await?;
 
         // write the matchup found above into every dataset with a template plot's
         // least unimplemented year. 
         let set_prev_implementation_query = format!(
             "update {schema}.{table} m 
-	     set {implementation} = api.imp
-  	    from assign_prev_implementation api
- 	    where m.{cluster} = api.{cluster} and 
-   		  m.{plot} = api.{plot} and 
-		  m.{year} = api.{year};
+	     set {implementation} = o.imp
+  	    from assign_prev_implementation o
+ 	    where {join_plot} and 
+		  m.{year} = o.{year};
             ");
         client.execute(&set_prev_implementation_query, &[]).await?;
     
@@ -189,10 +180,9 @@ pub async fn implementation_identification(
         let create_new_implementation_query = format!(
             "update {schema}.{table} m
 	     set {implementation} = {implementation} + 1
-             from assign_prev_implementation api
-             where m.{cluster} = api.{cluster} and 
-   	       m.{plot} = api.{plot} and 
-      	       m.{year} = api.{year} and  
+             from assign_prev_implementation o
+             where {join_plot} and 
+      	       m.{year} = o.{year} and  
                m.{plot_moved} in  {plot_move_codes};");
         client.execute(&create_new_implementation_query, &[]).await?;
     
@@ -203,6 +193,57 @@ pub async fn implementation_identification(
     
     Ok(0)
 }
+
+
+/// for the cluster and plot combo we create a comma seperated string to inject 
+/// into the select and group by clauses. 
+/// we assume in the SQL queries the table is abbreviated with m. 
+/// there is no comma at the end
+
+/// for join conditions we need to use equality and we assume the other table
+/// is abbreviated by 'o'
+fn create_cluster_plot_sql_fragments(cluster_columns: Vec<String>, 
+                                     plot_column : Option<String>, 
+) -> (String, String, String) {
+    
+    let mut cluster_plot = String::new();
+    let mut join_plot = String::new();
+    let mut luy_join_plot = String::new();    
+    for name in cluster_columns.iter() {
+        let name_string = format!(" m.{} ,", name);
+        cluster_plot.push_str(&name_string);
+        let eq_string = format!("m.{0} = o.{0} and\n", name);
+        join_plot.push_str(&eq_string);
+        let luy_string = format!("m.{0} = luy.{0} and\n", name);
+        luy_join_plot.push_str(&luy_string);
+
+    }
+    if let Some(plot_name) = plot_column {
+        let plot_string = format!(" m.{} ", plot_name);
+        cluster_plot.push_str(&plot_string);        
+        let eq_string = format!(" m.{0} = o.{0} ", plot_name);
+        join_plot.push_str(&eq_string);
+        let luy_string = format!(" m.{0} = luy.{0} ", plot_name);
+        luy_join_plot.push_str(&luy_string);
+
+    // no plot, only cluster names, so delete the end comma 
+    // and the end 'and' from the last cluster         
+    } else { 
+        cluster_plot.pop();
+        join_plot.pop();
+        join_plot.pop();
+        join_plot.pop();
+        join_plot.pop();
+        join_plot.push('\n');
+        luy_join_plot.pop();
+        luy_join_plot.pop();
+        luy_join_plot.pop();
+        luy_join_plot.pop();
+        luy_join_plot.push('\n');
+    }
+    (cluster_plot, join_plot, luy_join_plot)
+}
+
 
 struct ConnectionParameters {
     user : String, 
@@ -219,7 +260,7 @@ struct ConnectionParameters {
 /// The `tokio_postgres::Client` handle and the `JoinHandle` for the resource
 /// managing task running in the background. 
 pub async fn connect_crossnfi() -> Result<(Client, JoinHandle<()>),
-                                       Box<dyn std::error::Error + 'static>> {
+                                       Box<dyn std::error::Error + Send + Sync + 'static>> {
     let conn_param = read_connection_parameters();
     let conn_string = format!("user={} password={} dbname={} host=localhost", 
                               conn_param.user, conn_param.password, conn_param.database);
@@ -334,7 +375,7 @@ mod tests {
         let table_names = TableNames { 
             schema_name: "test".to_string(), 
             table_name: "mplot".to_string(), 
-            cluster_column: None, 
+            cluster_columns: vec![], 
             plot_column: None, 
             year_column: Some("inv_year".to_string()),
             source_column: Some("interval_name".to_string()),
@@ -359,7 +400,7 @@ mod tests {
         let table_names = TableNames { 
             schema_name: "test".to_string(), 
             table_name: "mplot".to_string(), 
-            cluster_column: Some("cluster_name".to_string()), 
+            cluster_columns: vec!["cluster_name".to_string()], 
             plot_column: Some("plot_name".to_string()), 
             year_column: Some("test_year".to_string()),
             source_column: Some("marker_status".to_string()),
@@ -378,5 +419,34 @@ mod tests {
             assert_eq!(orig, deriv);
         }
         
+    }
+    
+    #[rstest]
+    fn test_cluster_plot_sql_fragments() {
+        let cluster_columns = vec!["STATECD".to_string(), 
+                                   "UNITCD".to_string(), 
+                                   "COUNTYCD".to_string(), 
+                                   "PLOT".to_string()];
+        let plot_column = Some("SUBP".to_string());
+        let (cluster_plot, join_plot, luy_join_plot) = create_cluster_plot_sql_fragments(
+            cluster_columns, plot_column);
+        
+        let exp_cluster_plot = " m.STATECD , m.UNITCD , m.COUNTYCD , m.PLOT , m.SUBP ";
+        let exp_join_plot = "m.STATECD = o.STATECD and
+m.UNITCD = o.UNITCD and
+m.COUNTYCD = o.COUNTYCD and
+m.PLOT = o.PLOT and
+ m.SUBP = o.SUBP ";
+
+        let exp_luy_join_plot = "m.STATECD = luy.STATECD and
+m.UNITCD = luy.UNITCD and
+m.COUNTYCD = luy.COUNTYCD and
+m.PLOT = luy.PLOT and
+ m.SUBP = luy.SUBP ";
+
+        assert_eq!(cluster_plot, exp_cluster_plot);
+        assert_eq!(join_plot, exp_join_plot);
+        assert_eq!(luy_join_plot, exp_luy_join_plot);
+
     }
 }

@@ -1,0 +1,18 @@
+LOAD DATABASE
+     FROM sqlite:///home/shinken/comp/thesis/data/fia/SQLite_FIADB_LA.db
+     INTO postgresql:///crossnfi
+
+WITH data only,
+     prefetch rows = 1000
+
+SET  work_mem to '16MB', 
+     maintenance_work_mem to '512MB',
+     search_path TO 'fia',
+     role TO 'ddl_admin'
+
+     -- Type casting rules (handles SQLite's loose typing) 
+CAST type int when (= precision 1) to boolean using tinyint-to-boolean,
+     type text to varchar drop not null using remove-null-characters
+     -- Converts SQLite's 0/1 integers to PostgreSQL booleans
+     -- Strips null bytes that SQLite allows but PostgreSQL rejects
+;

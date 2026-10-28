@@ -1,8 +1,6 @@
--- config file for pgloader to load a fia state sqlite Pdatabase into 
--- an aptly named postgres schema with working role permissions
-
 LOAD DATABASE
      FROM sqlite:///home/shinken/comp/thesis/data/fia/SQLite_FIADB_CA.db
+     --chinook.db
      INTO postgresql:///crossnfi
 
 WITH include drop, 
@@ -13,13 +11,13 @@ WITH include drop,
 
 SET  work_mem to '16MB', 
      maintenance_work_mem to '512MB',
-     search_path TO 'fia_ca',
+     search_path TO 'fia',
      role TO 'ddl_admin'
  
 BEFORE LOAD DO
-     $$ ALTER DEFAULT PRIVILEGES IN SCHEMA fia_ca
+     $$ ALTER DEFAULT PRIVILEGES IN SCHEMA fia
           GRANT SELECT ON TABLES TO users; $$,
-     $$  ALTER DEFAULT PRIVILEGES IN SCHEMA fia_ca
+     $$  ALTER DEFAULT PRIVILEGES IN SCHEMA fia
           GRANT INSERT, UPDATE, DELETE ON TABLES TO devs; $$
 
 
