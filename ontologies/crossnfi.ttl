@@ -215,13 +215,13 @@ Plot"""@en ;
            rdfs:subPropertyOf :describes ;
            rdfs:domain :PlotDataset ;
            skos:note """Domain: 
-Plot
+PlotDataset
 
 Range: 
 entities for which there is data to be found at a plot. These entities are samples (of trees or other entitities), area and its terrain, forest community, forest processes"""@en ;
-           skos:prefLabel "beschreibt als plot"@de ,
-                          "describe como parcela"@es ,
-                          "describes as plot"@en .
+           skos:prefLabel "beschreibt als Plot-Datensatz"@de ,
+                          "describe como datos de parcela"@es ,
+                          "describes as plot dataset"@en .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#hasAspect
@@ -567,10 +567,6 @@ Range: a sample or data collections like a national forest inventory, a cluster 
              skos:prefLabel "es calidad de"@es ,
                             "is quality of"@en ,
                             "ist Qualität von"@de .
-
-
-###  https://www.easi.uni-bayreuth.de/crossnfi#isSamplingStatusOf
-:isSamplingStatusOf rdf:type owl:ObjectProperty .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#isStageFor
@@ -1801,8 +1797,7 @@ Thus it does not meet the criteria for forest vegetation, but did so in the past
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#SampledPlot
 :SampledPlot rdf:type owl:Class ;
-             rdfs:subClassOf :PlotMainAreaSamplingStatus ,
-                             :SamplingStatus ;
+             rdfs:subClassOf :PlotMainAreaSamplingStatus ;
              rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
              skos:definition "a plot main area, that was sampled"@en ;
              skos:prefLabel "erfasst"@de ,
@@ -1817,24 +1812,6 @@ Thus it does not meet the criteria for forest vegetation, but did so in the past
                    skos:prefLabel "aufgenommen mit Wald"@de ,
                                   "muestreado con bosque"@es ,
                                   "sampled with forest"@en .
-
-
-###  https://www.easi.uni-bayreuth.de/crossnfi#SamplingStatus
-:SamplingStatus rdf:type owl:Class ;
-                owl:equivalentClass [ rdf:type owl:Restriction ;
-                                      owl:onProperty :isSamplingStatusOf ;
-                                      owl:someValuesFrom :PlotMainArea
-                                    ] ;
-                rdfs:subClassOf :PlotMainAreaClassification ;
-                rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
-                skos:definition "a cluster area set which contains  at least one plot main area which was sampled"@en ,
-                                "classification of a plot main area on if it was sampled or not. If negative also gives the reason."@en ;
-                skos:prefLabel "Erfassungszustand einer Plot-Hauptfläche"@de ,
-                               "aufgenommen"@de ,
-                               "estado de muestreo de un areá principal de parcela"@es ,
-                               "muestreada"@es ,
-                               "sampling status of a plot main area"@en ,
-                               "sampled" .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#Shrub

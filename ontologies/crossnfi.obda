@@ -29,7 +29,7 @@ source		SELECT * FROM inventory_archive.cluster WHERE NOT is_training and not cl
 
 mappingId	fia-template-cluster
 target		d:TemplateCluster/fia/{statecd}_{unitcd}_{countycd}_{plot} a :TemplateCluster ; :describedBy :fia . 
-source		SELECT * FROM fia.plot where not is_training ;
+source		SELECT * FROM fia.plot ;
 
 mappingId	bwi-tree
 target		d:Tree/bwi/{cluster_name}_{plot_name}_{tree_number} a :Tree ; :describedBy :bwi . 
@@ -57,7 +57,7 @@ source		select * from fia.plot where plot_nonsample_reasn_cd in (1, 9)
 
 mappingId	fia-cluster-area-set-not-accessible-cluster
 target		d:ClusterAreaSet/fia/{statecd}_{unitcd}_{countycd}_{plot} :hasClusterSamplingStatus :notAccessibleCluster . 
-source		select * from fia.plot where plot_nonsample_reasn_cd in (2, 3)
+source		select * from fia.plot where plot_nonsample_reasn_cd in (2, 3);
 
 mappingId	fia-cluster-area-set-organizationally-impossible
 target		d:ClusterAreaSet/fia/{statecd}_{unitcd}_{countycd}_{plot} :hasClusterSamplingStatus :organizationallyImpossibleCluster . 
@@ -82,5 +82,29 @@ source		select * from fia.plot where plot_status_cd = 1;
 mappingId	bwi-cluster-area-set-sampled-cluster
 target		d:ClusterAreaSet/bwi/{cluster_name} :hasClusterSamplingStatus :sampledCluster . 
 source		select * from inventory_archive.cluster where cluster_situation in (2, 3, 4, 6, 7, 8) and cluster_status not in (4, 5) and not is_training ;
+
+mappingId	bwi-template-plot
+target		d:TemplatePlot/bwi/{cluster_name}_{plot_name} a :TemplatePlot ; :isImpliedByPatternBy d:TemplateCluster/bwi/{cluster_name} ; :describedBy :bwi . 
+source		select * from inventory_archive.plot;
+
+mappingId	fia-template-plot
+target		d:TemplatePlot/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp} a :TemplatePlot ; :isImpliedByPatternBy d:TemplateCluster/fia/{statecd}_{unitcd}_{countycd}_{plot} ; :describedBy :fia . 
+source		select * from fia.subplot;
+
+mappingId	bwi-plot-main-area
+target		d:PlotMainArea/bwi/{cluster_name}_{plot_name}_{implementation} a :PlotMainArea ; :implements d:PlotMainArea/bwi/{cluster_name}_{plot_name} ; :describedBy :bwi . 
+source		select * from inventory_archive.plot ;
+
+mappingId	fia-plot-main-area
+target		d:PlotMainArea/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{implementation} a :PlotMainArea ; :implements d:TemplatePlot/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp} ; :describedBy :fia . 
+source		select * from fia.subplot ;
+
+mappingId	bwi-plot-dataset
+target		d:PlotDataSet/bwi/{cluster_name}_{plot_name}_{implementation}_{inv_year} a :PlotDataset ; :collectedOnArea d:PlotMainArea/bwi/{cluster_name}_{plot_name}_{implementation} ; :isPartOf :bwi ; :describedBy :bwi ; :inYear {inv_year} . 
+source		select * from inventory_archive.plot ;
+
+mappingId	fia-plot-dataset
+target		d:PlotDataSet/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{implementation}_{invyr} a :PlotDataset ; :describedBy :fia ; :isPartOf :fia ; :collectedOnArea d:PlotMainArea/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{implementation} ; :inYear {invyr} . 
+source		select * from fia.subplot ;
 ]]
 
