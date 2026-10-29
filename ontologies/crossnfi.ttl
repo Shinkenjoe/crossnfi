@@ -1,4 +1,5 @@
 @prefix : <https://www.easi.uni-bayreuth.de/crossnfi#> .
+@prefix d: <https://www.easi.uni-bayreuth.de/crossnfi/data/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix geo: <http://www.opengis.net/ont/geosparql#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
@@ -132,7 +133,7 @@ geo:sfWithin rdf:type owl:ObjectProperty ;
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#collectedOnArea
 :collectedOnArea rdf:type owl:ObjectProperty ;
-                 rdfs:subPropertyOf owl:topObjectProperty ;
+                 rdfs:subPropertyOf :describes ;
                  owl:inverseOf :isPlaceForDataRecordingFor ;
                  rdfs:domain :DataCollection ;
                  rdfs:range :PlotArea ;
@@ -173,9 +174,19 @@ Range:  a plot area"""@en ;
                                         "enthält Plot durch Bedingung"@de .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#describedBy
+:describedBy rdf:type owl:ObjectProperty ;
+             rdfs:range :DataCollection ;
+             rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+             skos:definition "an enitiy is described by a data collection if the latter has data about the former"@en ;
+             skos:prefLabel "beschrieben von"@de ,
+                            "described by"@en ,
+                            "describido de"@es .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#describedByPlot
 :describedByPlot rdf:type owl:ObjectProperty ;
-                 rdfs:subPropertyOf :desrcibedBy ;
+                 rdfs:subPropertyOf :describedBy ;
                  owl:inverseOf :hasAsPlot ;
                  rdfs:range :PlotDataset ;
                  rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
@@ -193,20 +204,10 @@ Plot"""@en ;
 :describes rdf:type owl:ObjectProperty ;
            rdfs:domain :DataCollection ;
            rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
-           skos:definition "a data  collection like a Plot describes an entity if it has data about it"@en ;
+           skos:definition "a data  collection like a PlotData describes an entity if it has data about it"@en ;
            skos:prefLabel "beschreibt"@de ,
                           "describes"@en ,
                           "describes"@es .
-
-
-###  https://www.easi.uni-bayreuth.de/crossnfi#desrcibedBy
-:desrcibedBy rdf:type owl:ObjectProperty ;
-             rdfs:range :DataCollection ;
-             rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
-             skos:definition "an enitiy is described by a ddata collection if the latter has data about the former"@en ;
-             skos:prefLabel "beschrieben von"@de ,
-                            "described by"@en ,
-                            "describido de"@es .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#hasAsPlot
@@ -218,9 +219,9 @@ Plot
 
 Range: 
 entities for which there is data to be found at a plot. These entities are samples (of trees or other entitities), area and its terrain, forest community, forest processes"""@en ;
-           skos:prefLabel "beschreibtAlsPlot"@de ,
-                          "describesAsPlot"@en ,
-                          "describesComoParcela"@es .
+           skos:prefLabel "beschreibt als plot"@de ,
+                          "describe como parcela"@es ,
+                          "describes as plot"@en .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#hasAspect
@@ -535,7 +536,7 @@ Likewise a template plot is implemented by a plot main area, if the plot main ar
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#isPlaceForDataRecordingFor
 :isPlaceForDataRecordingFor rdf:type owl:ObjectProperty ;
-                            rdfs:subPropertyOf owl:topObjectProperty ;
+                            rdfs:subPropertyOf :describedBy ;
                             rdfs:domain :PlotArea ;
                             rdfs:range :DataCollection ;
                             rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
@@ -865,7 +866,7 @@ An entity is related to a classification instance by a subproperty of the  the o
                                   owl:onProperty :hasReferencePosition ;
                                   owl:someValuesFrom :Position
                                 ] ;
-                skos:definition "Set of plot main areas, which implement the templats plote a template cluster implies.  Has a central posiition that is sufficiently close to the implemented template cluster's  scheduled position"@en ;
+                skos:definition "Set of plot main areas, which implement the template plots a template cluster implies.  Has a central posiition that is sufficiently close to the implemented template cluster's  scheduled position"@en ;
                 skos:note """The Spanish IFN doesn't use clusters, hence there always is a cluster area set derived from the single plot main area it contains.
 
 The German BWI does not model this class and only knows template clusters, hence every template cluster gets a standard cluster area set. Its reference position always 
@@ -913,7 +914,7 @@ For the US FIA the cluster area set is the main class dealing with the event and
                                 ] ,
                                 [ rdf:type owl:Restriction ;
                                   owl:onProperty :isPartOf ;
-                                  owl:someValuesFrom :NationalForestInventory
+                                  owl:someValuesFrom :NationalForestInventoryData
                                 ] ;
                 rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
                 skos:altLabel "Datensatz zu einem Trakt (BWI)"@de ,
@@ -964,10 +965,6 @@ For multi-stemmed trees, d.r.c. is calculated from an equation that incorporates
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#DataCollection
 :DataCollection rdf:type owl:Class ;
-                rdfs:subClassOf [ rdf:type owl:Restriction ;
-                                  owl:onProperty :inYear ;
-                                  owl:someValuesFrom xsd:integer
-                                ] ;
                 rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
                 skos:broader "bfo : generally dependent continuant (31)"@en ;
                 skos:definition "a collection of data"@en ;
@@ -1215,23 +1212,23 @@ In Germany often identical with NUTS1."""@en ;
                             "provincia"@es .
 
 
-###  https://www.easi.uni-bayreuth.de/crossnfi#NationalForestInventory
-:NationalForestInventory rdf:type owl:Class ;
-                         rdfs:subClassOf :DataCollection ,
-                                         [ rdf:type owl:Restriction ;
-                                           owl:onProperty :collectedOnArea ;
-                                           owl:someValuesFrom :InventoryArea
-                                         ] ,
-                                         [ rdf:type owl:Restriction ;
-                                           owl:onProperty :contains ;
-                                           owl:someValuesFrom :PlotDataset
-                                         ] ;
-                         rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
-                         skos:broader "bfo : generally dependent continuant (31)"@en ;
-                         skos:definition "A collection of data and metadata of measurements in forests which are collected in a  a National Forest Inventory Project."@en ;
-                         skos:prefLabel "National Forest Inventory"@en ,
-                                        "Nationale Forstinventur"@de ,
-                                        "inventario forestal nacional"@es .
+###  https://www.easi.uni-bayreuth.de/crossnfi#NationalForestInventoryData
+:NationalForestInventoryData rdf:type owl:Class ;
+                             rdfs:subClassOf :DataCollection ,
+                                             [ rdf:type owl:Restriction ;
+                                               owl:onProperty :collectedOnArea ;
+                                               owl:someValuesFrom :InventoryArea
+                                             ] ,
+                                             [ rdf:type owl:Restriction ;
+                                               owl:onProperty :contains ;
+                                               owl:someValuesFrom :PlotDataset
+                                             ] ;
+                             rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                             skos:broader "bfo : generally dependent continuant (31)"@en ;
+                             skos:definition "A collection of data and metadata of measurements in forests which are collected in a  a National Forest Inventory Project."@en ;
+                             skos:prefLabel "Daten einer Nationale Forstinventur"@de ,
+                                            "National Forest Inventory data"@en ,
+                                            "datos de un inventario forestal nacional"@es .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#NonForestArea
@@ -1428,7 +1425,7 @@ The US FIA either includes them in the forest if they don't meet the relevant si
              rdfs:subClassOf :DataCollection ,
                              [ rdf:type owl:Restriction ;
                                owl:onProperty :isPartOf ;
-                               owl:someValuesFrom :NationalForestInventory
+                               owl:someValuesFrom :NationalForestInventoryData
                              ] ;
              dcterms:description "The entities that a plot refers to usually are the plot area and the terrain it encompasses, the forest community, human activities taking place on the plot terrain, samples of trees and  deadwood taken on the plot area."@en ;
              rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
@@ -1713,8 +1710,8 @@ Thus it does not meet the criteria for forest vegetation, but did so in the past
 :Region rdf:type owl:Class ;
         rdfs:subClassOf geo:Feature ,
                         [ rdf:type owl:Restriction ;
-                          owl:onProperty :desrcibedBy ;
-                          owl:someValuesFrom :NationalForestInventory
+                          owl:onProperty :describedBy ;
+                          owl:someValuesFrom :NationalForestInventoryData
                         ] ,
                         [ rdf:type owl:Restriction ;
                           owl:onProperty :inYear ;
@@ -1887,7 +1884,7 @@ Thus it does not meet the criteria for forest vegetation, but did so in the past
 :Stratum rdf:type owl:Class ;
          rdfs:subClassOf :DataCollection ;
          rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
-         skos:definition "a collection of plots whose majority desrcibe entities satisfiyng certain conditions stated by this stratum"@en ;
+         skos:definition "a collection of plot datasets whose majority describe entities satisfiyng certain conditions stated by this stratum"@en ;
          skos:note """A plot  'satisfies' a stratum, by the conditions stated by the stratum holding for the entities the plot desrcibes
 
 An NFI can choose to assign plots to  strata in 2 ways: 
@@ -2126,18 +2123,27 @@ The Spanish IFN and the US FIA have  a finer classification, but the German BWI 
                       "young stand"@en .
 
 
-###  https://www.easi.uni-bayreuth.de/crossnfi#SampledWithForest!
-<https://www.easi.uni-bayreuth.de/crossnfi#SampledWithForest!> rdf:type owl:Class ;
-                                                               rdfs:subClassOf :SampledCluster ;
-                                                               skos:definition "a cluster contains at least one plot main area with a forest plot subarea wich was sampled"@en ;
-                                                               skos:prefLabel "aufgenommen mit Wald"@de ,
-                                                                              "muestreado con bosque"@es ,
-                                                                              "sampled with forest"@en .
-
-
 #################################################################
 #    Individuals
 #################################################################
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#bwi
+:bwi rdf:type owl:NamedIndividual ,
+              :NationalForestInventoryData ;
+     skos:definition "data collected in the German Bundeswaldinventur"@en ;
+     skos:prefLabel "Bundeswaldinventur"@de ,
+                    "Bundeswaldinventur"@en ,
+                    "Bundeswaldinventur"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#fia
+:fia rdf:type owl:NamedIndividual ,
+              :NationalForestInventoryData ;
+     skos:definition "data collected in the US Forest Inventory and Analysis"@en ;
+     skos:prefLabel "Forest Inventory and Analysis"@de ,
+                    "Forest Inventory and Analysis"@en ,
+                    "Forest Inventory and Analysis"@es .
+
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#invalidCluster
 :invalidCluster rdf:type owl:NamedIndividual ,

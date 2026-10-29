@@ -1,5 +1,6 @@
 [PrefixDeclaration]
 :		https://www.easi.uni-bayreuth.de/crossnfi#
+d:		https://www.easi.uni-bayreuth.de/crossnfi/data/
 sh:		http://www.w3.org/ns/shacl#
 geo:		http://www.opengis.net/ont/geosparql#
 owl:		http://www.w3.org/2002/07/owl#
@@ -15,27 +16,71 @@ dcterms:		http://purl.org/dc/terms/
 
 [MappingDeclaration] @collection [[
 mappingId	bwi-template-cluster
-target		:bwi/TemplateCluster/{cluster_name} a :TemplateCluster . 
+target		d:TemplateCluster/bwi/{cluster_name} a :TemplateCluster ; :describedBy :bwi . 
 source		SELECT * FROM inventory_archive.cluster WHERE NOT is_training;
 
 mappingId	bwi-cluster-area-set
-target		:bwi/ClusterAreaSet/{cluster_name} a :ClusterAreaSet ; :implements :bwi/TemplateCluster/{cluster_name} . 
+target		d:ClusterAreaSet/bwi/{cluster_name} a :ClusterAreaSet ; :implements d:TemplateCluster/bwi/{cluster_name} ; :describedBy :bwi . 
 source		SELECT * FROM inventory_archive.cluster WHERE NOT is_training;
 
 mappingId	bwi-cluster-area-set-nonsampledOnlyNonForest
-target		:bwi/ClusterAreaSet/{cluster_name} :hasClusterSamplingStatus :nonsampledOnlyNonforest . 
+target		d:ClusterAreaSet/bwi/{cluster_name} :hasClusterSamplingStatus :nonsampledOnlyNonforest ; :describedBy :bwi . 
 source		SELECT * FROM inventory_archive.cluster WHERE NOT is_training and not cluster_situation = 1 and cluster_status in (4, 5);
 
 mappingId	fia-template-cluster
-target		:fia/TemplateCluster/{statecd}_{unitcd}_{countycd}_{plot} a :TemplateCluster . 
-source		SELECT * FROM fia_ca.plot;
+target		d:TemplateCluster/fia/{statecd}_{unitcd}_{countycd}_{plot} a :TemplateCluster ; :describedBy :fia . 
+source		SELECT * FROM fia.plot where not is_training ;
 
-mappingId	bwi:Tree
-target		:bwi/Tree/{cluster_name}_{plot_name}_{tree_number} a :Tree . 
+mappingId	bwi-tree
+target		d:Tree/bwi/{cluster_name}_{plot_name}_{tree_number} a :Tree ; :describedBy :bwi . 
 source		select p.cluster_name, p.plot_name, t.tree_number,
 			t.tree_species , t.dbh
 			from  inventory_archive.tree t
 			join inventory_archive.plot p
 			on p.id = t.plot_id
+
+mappingId	fia-cluster-area-set
+target		d:ClusterAreaSet/fia/{statecd}_{unitcd}_{countycd}_{plot} a :ClusterAreaSet ; :implements d:TemplateCluster/fia/{statecd}_{unitcd}_{countycd}_{plot} ; :describedBy :fia . 
+source		select * from fia.plot;
+
+mappingId	fia-cluster-area-set-nonsampledOnlyNonForest
+target		d:ClusterAreaSet/fia/{statecd}_{unitcd}_{countycd}_{plot} :hasClusterSamplingStatus :nonSampledOnlyNonForest . 
+source		SELECT * from fia.plot where plot_nonsample_reasn_cd = 11;
+
+mappingId	bwi-cluster-area-set-invalid-cluster
+target		d:ClusterAreaSet/bwi/{cluster_name} :hasClusterSamplingStatus :invalidCluster . 
+source		SELECT * from inventory_archive.cluster c where c.cluster_situation in (1, 5, 10) and not is_training ;
+
+mappingId	fia-cluster-area-set-invalid-cluster
+target		d:ClusterAreaSet/fia/{statecd}_{unitcd}_{countycd}_{plot} :hasClusterSamplingStatus :invalidCluster . 
+source		select * from fia.plot where plot_nonsample_reasn_cd in (1, 9)
+
+mappingId	fia-cluster-area-set-not-accessible-cluster
+target		d:ClusterAreaSet/fia/{statecd}_{unitcd}_{countycd}_{plot} :hasClusterSamplingStatus :notAccessibleCluster . 
+source		select * from fia.plot where plot_nonsample_reasn_cd in (2, 3)
+
+mappingId	fia-cluster-area-set-organizationally-impossible
+target		d:ClusterAreaSet/fia/{statecd}_{unitcd}_{countycd}_{plot} :hasClusterSamplingStatus :organizationallyImpossibleCluster . 
+source		select * from fia.plot where plot_nonsample_reasn_cd in (5, 8);
+
+mappingId	fia-cluster-area-set-reference-position-relocated
+target		d:ClusterAreaSet/fia/{statecd}_{unitcd}_{countycd}_{plot} :hasClusterSamplingStatus :referencePositionRelocatedCluster . 
+source		select * from fia.plot where plot_nonsample_reasn_cd in (6, 7);
+
+mappingId	fia-cluster-area-set-non-sampled-cluster
+target		d:ClusterAreaSet/fia/{statecd}_{unitcd}_{countycd}_{plot} :hasClusterSamplingStatus :nonSampledCluster . 
+source		select * from fia.plot where plot_nonsample_reasn_cd = 10;
+
+mappingId	fia-cluster-area-set-sampled-only-non-forest
+target		d:ClusterAreaSet/fia/{statecd}_{unitcd}_{countycd}_{plot} :hasClusterSamplingStatus :sampledOnlyNonForest . 
+source		select * from fia.plot where plot_status_cd = 2 ;
+
+mappingId	fia-cluster-area-set-sampled-with-forest
+target		d:ClusterAreaSet/fia/{statecd}_{unitcd}_{countycd}_{plot} :hasClusterSamplingStatus :sampledWithForest . 
+source		select * from fia.plot where plot_status_cd = 1;
+
+mappingId	bwi-cluster-area-set-sampled-cluster
+target		d:ClusterAreaSet/bwi/{cluster_name} :hasClusterSamplingStatus :sampledCluster . 
+source		select * from inventory_archive.cluster where cluster_situation in (2, 3, 4, 6, 7, 8) and cluster_status not in (4, 5) and not is_training ;
 ]]
 
