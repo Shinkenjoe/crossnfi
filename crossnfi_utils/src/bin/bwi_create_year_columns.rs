@@ -10,7 +10,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send  + Sync + 'static
         cluster_columns : vec!["cluster_name".to_string()], 
         plot_column : Some("plot_name".to_string()),
         year_column : Some("inv_year".to_string()), 
-        source_column : Some("interval_name".to_string()),
+        source_columns : vec!["interval_name".to_string()],
     };
     create_year_column(&client, table_names).await?;
     Ok(())

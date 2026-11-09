@@ -1,7 +1,6 @@
 use tokio_postgres::{ Client }; 
 use super::TableNames;
 
-#[allow(unused)]
 pub async fn create_year_column(client: &Client, table_names: TableNames)
                             -> Result<u64, Box<dyn std::error::Error + Send + Sync + 'static>> {
     let drop_query = format!(
@@ -28,7 +27,7 @@ pub async fn create_year_column(client: &Client, table_names: TableNames)
         schema=table_names.schema_name, 
         table=table_names.table_name,
         new_col=table_names.year_column.unwrap(), 
-        source_col=table_names.source_column.unwrap());
+        source_col=table_names.source_columns.get(0).unwrap());
     let response = client.execute(&update_query, &[]).await?;
     Ok(response)            
     }

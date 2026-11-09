@@ -23,22 +23,306 @@ pub struct TableNames {
     /// name of the column holding the year (either to be created or existant in the table) 
     pub year_column: Option<String>, 
     /// name for either
-    /// - the column holding the codes for the case that the plot moved
-    /// - the column from which the year was extracted
-    pub source_column: Option<String>, 
+    /// - the column holding the codes for the relocation case
+    /// - the column from which the year was extracted (create_year_column)
+    /// - the pair of columns holding the location of a template cluster (lon and lat)
+    /// - the column from which to take the template cluster identification code
+    pub source_columns: Vec<String>, 
+}
+
+
+/// identify a template cluster given a table of cluster datasets holding id references 
+/// of cluster area sets 
+///
+/// # Scenario
+/// a table holds records of cluster (or plot) datasets and id refererces to cluster area 
+/// sets ( or plot main areas). The cluster template (or plot template) are not identified
+/// only cluster area sets. When a field crew cannot identfy the reference position of 
+/// a cluster area set, it notes down a  code (`relocation_codes`) in a special column 
+/// , and create a new cluster area set implementing that template cluster.
+/// Cluster area sets implement the same template cluster if their locations are sufficiently
+/// close ot each other. This method treats cluster area sets which are within a distance of 
+/// degrees (lon, lat) given by the argument `degree_tolerance` as implementing the same 
+/// template cluster. It creates an identifying code in a column named "template" from the
+/// cluster area set, which implement a template cluster earliest (by year). 
+/// ## table_names.source_columns
+/// holds 4 column names : 
+/// 1. column holding the relocation code
+/// 2. location latidude / y - coordinate
+/// 3. location longitude / x - coordinate 
+/// 4. column name which to use for creating the template cluster code
+
+#[allow(unused_variables)]
+pub async fn template_identification(
+    client: &Client, 
+    table_names: TableNames, 
+    degree_tolerance : f64, 
+    relocation_codes: Vec<i32>,
+) -> Result<u64, Box<dyn std::error::Error + Send + Sync + 'static>> {
+
+    let TableNames { 
+        schema_name : schema, 
+        table_name  : table, 
+        cluster_columns , 
+        plot_column, 
+        year_column, 
+        source_columns 
+    } = table_names;
+    let year = year_column.expect("no year_column given");
+    let [id, relocation_column, lat, lon, template_source] = source_columns.try_into()
+        .expect("table_names.source_columns: id, relocation_column, lat, lon, template_src");
+    let template = "template";  
+    let template_prev_cluster = "template_prev_cluster";
+
+    // in the data all cluster datasets of same plot code have the same location. 
+    // we assume that the relocation code (kindcd = 3) is given in all cases of 
+    // a relocation, that is  all cluster area sets for which the code is not apperating 
+    // are the sole implementors of their template cluster. 
+    // 1. identify the datasets which have relocations,
+    // 3. for those datasets find datasets implementing the same template cluster 
+    //    that is which have a location at a distance below `tolerance` 
+    // 3. for all cluster datasets implementing one plot template set the column "template"
+    //    to the cluster area set code of the earliest (by year) code         
+
+
+        // SQL list string to test for plot movement. Like "( 4 )" or "( 6, 7 )"
+    if relocation_codes.is_empty() {
+        return Err("relocation codes are not given".into()); 
+    }
+    let mut relocation = format!("( {}", relocation_codes[0]);
+    for code in relocation_codes.iter().skip(1) {
+        let code_string = format!(", {}", code);
+        relocation.push_str(&code_string);
+    }
+    relocation.push_str(" )");
+    
+    // drop and create the column for holding the templates
+    let drop_query = format!(
+        "alter table {schema}.{table} 
+             drop column if exists {template};");
+    client.execute(&drop_query, &[]).await?;
+    
+    let create_query = format!(
+        "alter table {schema}.{table} 
+             add column {template} bigint;");
+    client.execute(&create_query, &[]).await?;
+
+    // drop and create the column holding the previous plot main area 
+    // implementing a template in case of a relocation
+    let drop_query = format!(
+        "alter table {schema}.{table} 
+             drop column if exists {template_prev_cluster};");
+    client.execute(&drop_query, &[]).await?;
+    
+    let create_query = format!(
+        "alter table {schema}.{table} 
+             add column {template_prev_cluster} bigint;");
+    client.execute(&create_query, &[]).await?;
+
+
+    
+    // create sql fragments for select clauses and joining conditions
+    let (cluster_plot, join_plot, _) = 
+        create_cluster_plot_sql_fragments(cluster_columns,plot_column);
+
+    
+    // select the locations of cluster datasets holding the relocation code
+    let reloc_locations_query = format!(
+        "select {lat}, {lon} 
+         from {schema}.{table}
+         where {relocation_column} in {relocation};");
+    let relocation_locations = client.query(&reloc_locations_query, &[])
+        .await.expect("error at retrieving locations of relocations");
+    for row in relocation_locations {
+        
+        let rel_lat : f64 = row.try_get(0).expect("could not retrieve relocation latitude");
+        let rel_lon : f64 = row.try_get(1).expect("could not retrieve relocation longitude");
+        let lower_lat = rel_lat - degree_tolerance;
+        let upper_lat = rel_lat + degree_tolerance;
+        let lower_lon = rel_lon - degree_tolerance;
+        let upper_lon = rel_lon + degree_tolerance;
+        
+        let drop_reloc_table_query = format!(
+            "drop table if exists relocs");
+
+        let reloc_table_query = format!(
+            " create temporary table relocs as
+              (select m.{id}, {cluster_plot}, m.{year}, m.{relocation_column}
+               from {schema}.{table} m
+               where 
+                   (m.{lat} between $1 and $2) and 
+                   (m.{lon} between $3 and $4)
+               order by {year});"
+            );
+        client.execute(&drop_reloc_table_query, &[]).await.
+            expect("could not drop temporary reloc table");
+        client.execute(&reloc_table_query, 
+                       &[&lower_lat, &upper_lat, &lower_lon, &upper_lon]).await
+        .expect("could not create temporary reloc table");
+
+        let min_year_query = format!("select min({year}) from relocs;");
+        let min_year : i64 = match client.query_one_scalar::<i64, _>(&min_year_query, &[])
+            .await {
+                Err(e) => { 
+                    eprintln!{"{rel_lat}, {rel_lon}, {e}"};
+                    panic!{"could not retrieve reloc min year"};
+                }
+                Ok(yr) => yr
+            };
+
+        let cluster_id_query = format!(
+            "select min({template_source})
+             from relocs
+             where {year} = {min_year};");
+        let template_id: i64  = client.query_one_scalar(&cluster_id_query, &[]).await
+            .expect("could not retrieve template id");
+
+        let update_relocated_query = format!(
+            "update {schema}.{table} m
+             set {template} = {template_id} 
+             from relocs o
+             where m.{id} = o.{id};");
+        client.execute(&update_relocated_query, &[]).await
+            .expect("could not set plot template id for relocation cases");                
+
+        // set the column holding the previous plot main area 
+        // implementing a template in case of a relocation
+
+        let reloc_years_query = format!("
+            select {year} 
+            from relocs 
+            where {relocation_column} in {relocation};");
+        let reloc_years = client.query(&reloc_years_query, &[])
+            .await.expect("could not collect years of relocations");
+        for row in reloc_years {
+            let reloc_year  = if let Some(rel_year) = row
+                .try_get::<usize, Option<i64>>(0) 
+                .expect("there was not a Some to unwrap for a reloc_year"){
+                    rel_year
+                } else {
+                    panic!("there was not a Some to unwrap for a reloc_year");
+                };
+            
+            let reloc_id_query = format!("                
+                select {id} 
+                from relocs 
+                where {year} = {reloc_year};");
+            let reloc_id : String = client.query_one_scalar(&reloc_id_query, &[])
+                .await.expect("could not retrieve id of relocation cluster dataset");
+
+            let prev_cluster_query = format!("
+                select {template_source} 
+                from relocs 
+                where {year} = (select max({year})
+                                from relocs 
+                                 where {year} < {reloc_year});");
+            let prev_cluster_option : Option<Option<i64>>  = client
+                .query_opt_scalar(&prev_cluster_query, &[]).await
+                .expect("could not query for plot previous of relocation");
+            match prev_cluster_option {
+                Some(Some(prev_cluster)) => {
+                   let update_template_prev_cluster_query = format!(
+                       "update {schema}.{table} 
+                        set {template_prev_cluster} = {prev_cluster} 
+                        where {id} = '{reloc_id}';"); 
+                    client.execute(&update_template_prev_cluster_query, &[])
+                        .await.expect("could not update template prev cluster");
+                }
+                Some(None) | None => {}
+                
+            };
+        }
+    }
+
+    let update_nonrelocated_query = format!(
+        " update {schema}.{table} 
+          set {template} = {template_source}
+          where {template} is null;");
+    client.execute(&update_nonrelocated_query, &[]).await
+        .expect("could not set plot template id for non-relocation cases");   
+    Ok(0)
+}    
+
+/// copy over template id from cluster area set table into plot main area table 
+
+#[allow(unused_variables)]
+pub async fn template_cluster_to_plot(
+    client: &Client, 
+    table_names: TableNames, 
+) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+
+    let TableNames { 
+        schema_name : schema, 
+        table_name  : table, 
+        cluster_columns , 
+        plot_column, 
+        year_column, 
+        source_columns } = table_names;
+    let cluster_column = cluster_columns.get(0)
+        .expect("could not access cluster foreign key");
+    let [cluster_table, 
+         cluster_primary, 
+         template_source, 
+         template_prev_cluster_source] = source_columns
+        .try_into()
+        .expect("table_names.source_columns: cluster_table, cluster_primary, template_src");
+    let template = "template";  
+    let template_prev = "template_prev";
+
+    let drop_query = format!(
+        "alter table {schema}.{table} 
+             drop column if exists {template};");
+    client.execute(&drop_query, &[]).await?;
+    
+    let create_query = format!(
+        "alter table {schema}.{table} 
+             add column {template} bigint;");
+    client.execute(&create_query, &[]).await?;
+
+    let drop_query = format!(
+        "alter table {schema}.{table} 
+             drop column if exists {template_prev};");
+    client.execute(&drop_query, &[]).await?;
+    
+    let create_query = format!(
+        "alter table {schema}.{table} 
+             add column {template_prev} bigint;");
+    client.execute(&create_query, &[]).await?;
+
+        
+    let copy_query = format!(
+        "update {schema}.{table} p
+         set {template} = c.{template_source}, 
+             {template_prev} = c.{template_prev_cluster_source}
+         from {schema}.{cluster_table} c
+         where c.{cluster_primary} = p.{cluster_column};
+        ");
+    client.execute(&copy_query, &[]).await
+        .expect("copying template from cluster to plot failed");
+    Ok(())
 }
 
 
 
 
 
-/// identify plot or cluster implementation - initialization phase
 
-
+/// identify plot (or cluster) implementataion 
+/// scenario you have a set of plot datasets referring to plot templates in a 
+/// identifying key. The relocation of a plot main area, thus the creation of a 
+/// new plot main area is marked by values (`relocation_codes`) a special column
+/// (`table_names.source_column`) takes, further on called relocation code. 
+/// the function  installs a column named `implementataion` in the table which is
+/// used as identifier for different plot main area implementing a plot template. 
+/// the plot dataset belonging to a plot template with the earliest inventory year
+/// gets dubbed as implementation '1'. When a relocation code appears,
+/// the implementation number gest incremented by 1 (a new plot main area gets created). 
+/// # Returns
+/// Result, holding the number of rows affected in the `Ok` variant or an error in `Err` 
 pub async fn implementation_identification(
     client: &Client,
     table_names: TableNames,
-    plot_movement_codes: Vec<i32>, )
+    relocation_codes: Vec<i32>, )
     -> Result<u64, Box<dyn std::error::Error + Send + Sync + 'static>> {
 
     // explode table_names
@@ -48,24 +332,25 @@ pub async fn implementation_identification(
         cluster_columns , 
         plot_column, 
         year_column, 
-        source_column } = table_names;
+        source_columns } = table_names;
     let year = year_column.expect("no year_column given");
-    let plot_moved = source_column.expect("no column for plot moved codes given");
+    let plot_moved = source_columns.get(0)
+        .expect("no column for plot relocation codes given");
     let implementation = "implementation";
 
     let (cluster_plot, join_plot, luy_join_plot) = 
         create_cluster_plot_sql_fragments(cluster_columns,plot_column);
 
     // SQL list string to test for plot movement. Like "( 4 )" or "( 6, 7 )"
-    if plot_movement_codes.is_empty() {
+    if relocation_codes.is_empty() {
         return Err("plot movement codes not given".into()); 
     }
-    let mut plot_move_codes = format!("( {}", plot_movement_codes[0]);
-    for code in plot_movement_codes.iter().skip(1) {
+    let mut relocation = format!("( {}", relocation_codes[0]);
+    for code in relocation_codes.iter().skip(1) {
         let code_string = format!(", {}", code);
-        plot_move_codes.push_str(&code_string);
+        relocation.push_str(&code_string);
     }
-    plot_move_codes.push_str(" )");
+    relocation.push_str(" )");
     
     // drop and create the column for holding the implementations
     let drop_query = format!(
@@ -183,7 +468,7 @@ pub async fn implementation_identification(
              from assign_prev_implementation o
              where {join_plot} and 
       	       m.{year} = o.{year} and  
-               m.{plot_moved} in  {plot_move_codes};");
+               m.{plot_moved} in  {relocation};");
         client.execute(&create_new_implementation_query, &[]).await?;
     
         // see how many unimplemented datasets are left
@@ -313,7 +598,7 @@ fn read_connection_parameters() -> ConnectionParameters {
 mod tests {
     use super::*;
     use rstest::{rstest, fixture };
-    use tokio::runtime::Runtime;
+    use tokio::{task};
     
     #[fixture]
     #[once]
@@ -349,8 +634,11 @@ mod tests {
     #[fixture]
     #[once]
     fn install_test_database(conn_params : &ConnectionParameters) -> i32 {
-        let rt = Runtime::new().unwrap();
-        rt.block_on(install_test_database_query(conn_params));
+        task::block_in_place(||{
+            let handle = tokio::runtime::Handle::current();
+            handle.block_on(install_test_database_query(conn_params));
+
+        });
         3
     }
 
@@ -364,12 +652,13 @@ mod tests {
 
 
     #[rstest]
-    fn test_database(install_test_database : &i32){
+    #[tokio::test(flavor = "multi_thread", worker_threads=2)]
+    async fn test_database(install_test_database : &i32){
         assert_eq!(*install_test_database, 3);
     }
     
     #[rstest]
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn test_add_bwi_year_column(connect_testdb : impl Future<Output = Client>) {
         let client = connect_testdb.await;
         let table_names = TableNames { 
@@ -378,7 +667,7 @@ mod tests {
             cluster_columns: vec![], 
             plot_column: None, 
             year_column: Some("inv_year".to_string()),
-            source_column: Some("interval_name".to_string()),
+            source_columns: vec!["interval_name".to_string()],
         };
         bwi::create_year_column(&client, table_names).await
             .expect("create_year_column had an err");
@@ -394,8 +683,8 @@ mod tests {
     }
     
     #[rstest]
-    #[tokio::test]
-    async fn test_create_implementations(connect_testdb : impl Future<Output = Client>) {
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn test_identify_implementations(connect_testdb : impl Future<Output = Client>) {
         let client = connect_testdb.await;
         let table_names = TableNames { 
             schema_name: "test".to_string(), 
@@ -403,10 +692,10 @@ mod tests {
             cluster_columns: vec!["cluster_name".to_string()], 
             plot_column: Some("plot_name".to_string()), 
             year_column: Some("test_year".to_string()),
-            source_column: Some("marker_status".to_string()),
+            source_columns: vec!["marker_status".to_string()],
         };
-        let plot_movement_codes = vec![4,5];
-        implementation_identification(&client, table_names, plot_movement_codes).await
+        let relocation_codes = vec![4,5];
+        implementation_identification(&client, table_names, relocation_codes).await
             .expect("something went wrong at identifying implementations");
         
         let rows = client.query(
@@ -421,6 +710,7 @@ mod tests {
         
     }
     
+
     #[rstest]
     fn test_cluster_plot_sql_fragments() {
         let cluster_columns = vec!["STATECD".to_string(), 
@@ -449,4 +739,80 @@ m.PLOT = luy.PLOT and
         assert_eq!(luy_join_plot, exp_luy_join_plot);
 
     }
+
+    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    #[allow(unused_variables)]
+    async fn test_identify_templates(connect_testdb : impl Future<Output = Client>) {
+        let client = connect_testdb.await;
+        let table_names = TableNames { 
+            schema_name: "test".to_string(), 
+            table_name: "cluster".to_string(), 
+            cluster_columns: vec!["cluster_name".to_string()], 
+            plot_column: None , 
+            year_column: Some("test_year".to_string()),
+            source_columns: vec!["id".to_string(),
+                                 "marker_status".to_string(), 
+                                 "lat".to_string(),
+                                 "lon".to_string(), 
+                                 "cluster_name".to_string()],
+        };
+        let relocation_codes = vec![4,5];
+        template_identification(&client, table_names, 0.02f64, relocation_codes).await
+            .unwrap();
+        
+        let rows = client.query(
+            "select c.template, c.expected_template, 
+                    c.template_prev_cluster, c.expected_template_prev_cluster
+             from test.cluster c;", &[])
+        .await.expect("could not query test db after col creation");        
+        for row in rows {
+            let orig : i64 = row.try_get(0).expect("orig in test could not be found");
+            let deriv : i64 = row.try_get(1).expect("deriv in test could not be found");
+            let orig_prev : Option<i64> = row.try_get(2)
+                .expect("orig_prev in test could not be found");
+            let deriv_prev : Option<i64> = row.try_get(3)
+                .expect("deriv_prev in test could not be found");
+            assert_eq!(orig, deriv);
+            
+            assert_eq!(orig_prev, deriv_prev);
+        }        
+    }
+    
+    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    #[allow(unused_variables)]
+    async fn test_template_cluster_to_plot(connect_testdb : impl Future<Output=Client>){
+        let client = connect_testdb.await;
+        let table_names = TableNames { 
+            schema_name: "test".to_string(), 
+            table_name: "plot".to_string(), 
+            cluster_columns: vec!["cluster_id".to_string()], 
+            plot_column: None , 
+            year_column: None ,
+            source_columns: vec!["cluster".to_string(), 
+                                 "id".to_string(), 
+                                 "expected_template".to_string(),
+                                 "expected_template_prev_cluster".to_string()],
+        };
+        
+        template_cluster_to_plot(&client, table_names)
+            .await.expect("test copy template from cluster to plot failed");
+        
+        let rows = client.query(
+            "select p.template, p.expected_template, 
+                    p.template_prev, p.expected_template_prev
+             from test.plot p;", &[])
+        .await.expect("could not query test db after col creation");        
+        for row in rows {
+            let orig : i64 = row.try_get(0).expect("orig in test could not be found");
+            let deriv : i64 = row.try_get(1).expect("deriv in test could not be found");
+            let orig_prev : Option<i64> = row.try_get(2)
+                .expect("orig_prev in test could not be found");
+            let deriv_prev : Option<i64> = row.try_get(3)
+                .expect("deriv_prev in test could not be found");
+            assert_eq!(orig, deriv);            
+            assert_eq!(orig_prev, deriv_prev);
+        }
+    } 
 }
