@@ -78,3 +78,38 @@ insert into test.plot values ('2', '2', 2012, 12, 12);
 insert into test.plot values ('3', '5', 2017, 21, 21);
 insert into test.plot values ('4', '6', 2017, 21, 22);
 insert into test.plot values ('5', '9', 2022, 31, null);
+
+
+drop table if exists test.plotsub;
+create table test.plotsub 
+       ( cluster_id1 bigint NOT NULL,
+         cluster_id2 bigint NOT NUlL, 
+         plot_id bigint NOT NULL, 
+         test_year bigint NOT NULL, 
+         status_cd bigint NOT NULL, 
+         expected_nonsampled_status bigint);
+
+-- nonsample and only forest
+insert into test.plotsub values (1, 1, 1, 2012, 1, null);
+insert into test.plotsub values (1, 1, 1, 2017, 5, 1);
+insert into test.plotsub values (1, 1, 1, 2022, 1, null); 
+
+-- nonsample and only nonforest 
+insert into test.plotsub values (1, 1, 2, 2012, 2, null);
+insert into test.plotsub values (1, 1, 2, 2017, 5, 2);
+insert into test.plotsub values (1, 1, 2, 2022, 2, null); 
+
+-- nonsample and both 
+insert into test.plotsub values (1, 1, 3, 2012, 1, null);
+insert into test.plotsub values (1, 1, 3, 2017, 5, 1);
+insert into test.plotsub values (1, 1, 3, 2022, 2, null); 
+
+-- only nonsample
+insert into test.plotsub values (1, 1, 4, 2012, 5, 1);
+insert into test.plotsub values (1, 1, 4, 2017, 5, 1);
+insert into test.plotsub values (1, 1, 4, 2022, 5, 1); 
+
+-- no nonsample forest
+insert into test.plotsub values (1, 1, 5, 2012, 1, null);
+insert into test.plotsub values (1, 1, 5, 2017, 1, null);
+insert into test.plotsub values (1, 1, 5, 2022, 2, null); 

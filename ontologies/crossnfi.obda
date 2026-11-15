@@ -13,6 +13,7 @@ rdfs:		http://www.w3.org/2000/01/rdf-schema#
 skos:		http://www.w3.org/2004/02/skos/core#
 unit:		http://qudt.org/vocab/unit/
 dcterms:		http://purl.org/dc/terms/
+quantitykind:	http://qudt.org/vocab/quantitykind/
 
 [MappingDeclaration] @collection [[
 mappingId	bwi-template-cluster
@@ -118,65 +119,64 @@ source		select p.statecd, p.unitcd, p.countycd, p.plot, p.template_prev_cluster,
 
 mappingId	fia-plot-main_area-reference_position_old
 target		d:PlotMainAreaSamplingStatus/fia/{statecd}_{unitcd}_{countycd}_{template_prev}_{subp} a :ReferencePositionRelocatedPlot ; :isPlotSamplingStatusOf d:PlotMainArea/fia/{statecd}_{unitcd}_{countycd}_{template_prev}_{subp} ; :inYear {invyr} . 
-source		select statecd, unitcd, countycd, template_prev, subp, invyr 
+source		select statecd, unitcd, countycd, template_prev, subp, invyr
 			from fia.subplot
 			where not template_prev is null;
 
 mappingId	fia-plot-nonsample
 target		d:PlotMainAreaSamplingStatus/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp} a :NonsampledPlot ; :isPlotSamplingStatusOf d:PlotMainArea/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp} ; :inYear {invyr} . 
-source		select statecd, unitcd, countycd, plot, subp, invyr from 
+source		select statecd, unitcd, countycd, plot, subp, invyr from
 			fia.subplot
 			where point_nonsample_reasn_cd in (10);
 
 mappingId	fia-invalid-plot
 target		d:PlotMainAreaSamplingStatus/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp} a :InvalidPlot ; :isPlotSamplingStatusOf d:PlotMainArea/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp} ; :inYear {invyr} . 
-source		select statecd, unitcd, countycd, plot, subp, invyr from 
+source		select statecd, unitcd, countycd, plot, subp, invyr from
 			fia.subplot
 			where point_nonsample_reasn_cd in (1, 9);
 
 mappingId	fia-not-accessible-plot
 target		d:PlotMainAreaSamplingStatus/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp} a :NotAccessiblePlot ; :isPlotSamplingStatusOf d:PlotMainArea/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp} ; :inYear {invyr} . 
-source		select statecd, unitcd, countycd, plot, subp, invyr from 
+source		select statecd, unitcd, countycd, plot, subp, invyr from
 			fia.subplot
 			where point_nonsample_reasn_cd in (2, 3);
 
 mappingId	fia-organizationally-impossible-plot
 target		d:PlotMainAreaSamplingStatus/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp} a :OrganizationallyImpossiblePlot ; :isPlotSamplingStatusOf d:PlotMainArea/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp} ; :inYear {invyr} . 
-source		select statecd, unitcd, countycd, plot, subp, invyr from 
+source		select statecd, unitcd, countycd, plot, subp, invyr from
 			fia.subplot
 			where point_nonsample_reasn_cd in (4, 5, 6, 7);
 
 mappingId	fia-sampled-only-nonforest
 target		d:PlotMainAreaSamplingStatus/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp} a :SampledOnlyNonForestPlot ; :isPlotSamplingStatusOf d:PlotMainArea/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp} ; :inYear {invyr} . 
-source		select statecd, unitcd, countycd, plot, subp, invyr from 
+source		select statecd, unitcd, countycd, plot, subp, invyr from
 			fia.subplot
 			where subp_status_cd = 2;
 
 mappingId	fia-sampled-with-forest
 target		d:PlotMainAreaSamplingStatus/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp} a :SampledWithForestPlot ; :isPlotSamplingStatusOf d:PlotMainArea/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp} ; :inYear {invyr} . 
-source		select statecd, unitcd, countycd, plot, subp, invyr from 
+source		select statecd, unitcd, countycd, plot, subp, invyr from
 			fia.subplot
 			where subp_status_cd = 1;
 
 mappingId	fia-plot-nonsampled-only-nonforest
 target		d:PlotMainAreaSamplingStatus/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp} a :NonsampledOnlyNonForestPlot ; :isPlotSamplingStatusOf d:PlotMainArea/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp} ; :inYear {invyr} . 
-source		select statecd, unitcd, countycd, plot, subp, invyr from 
+source		select statecd, unitcd, countycd, plot, subp, invyr from
 			fia.subplot
 			where point_nonsample_reasn_cd in (11);
 
 mappingId	bwi-plot-nonsampled-only-nonforest
 target		d:PlotMainAreaSamplingStatus/bwi/{cluster_name}_{plot_name} a :NonsampledOnlyNonForestPlot ; :isPlotSamplingStatusOf d:PlotMainArea/bwi/{cluster_name}_{plot_name} ; :inYear {inv_year} . 
-source		select inv_year, p.cluster_name, plot_name from 
-			inventory_archive.plot p 
+source		select inv_year, p.cluster_name, plot_name from
+			inventory_archive.plot p
 			join inventory_archive.cluster c
 			on c.id = p.cluster_id
-			where  (c.cluster_status  in (4, 5) or 
-			       (forest_status = 0 and land_use is null))
-			       and c.cluster_situation not in (1, 5)
-			       and p.forest_status not in (3, 5, 7, 23, 25, 73, 75, 8, 9)
-			       and p.land_use not in (99, 93)
-			       and not p.accessibility > 1;
-			;
+			where  (c.cluster_status  in (4, 5) or
+			(forest_status = 0 and land_use is null))
+			and c.cluster_situation not in (1, 5)
+			and p.forest_status not in (3, 5, 7, 23, 25, 73, 75, 8, 9)
+			and p.land_use not in (99, 93)
+			and not p.accessibility > 1;
 
 mappingId	bwi-plot-sampled-with-forest
 target		d:PlotMainAreaSamplingStatus/bwi/{cluster_name}_{plot_name} a :SampledWithForestPlot ; :isPlotSamplingStatusOf d:PlotMainArea/bwi/{cluster_name}_{plot_name} ; :inYear {inv_year} . 
@@ -184,44 +184,43 @@ source		select p.cluster_name, p.plot_name, p.inv_year
 			from inventory_archive.plot p
 			join inventory_archive.cluster c
 			on c.id = p.cluster_id
-			-- temporarily non-stocked forest (3, 23, 73) 
-			-- and stocked forest (5, 7, 25, 75) 
-			where (p.forest_status in (3, 5, 7, 23, 25, 73, 75) or p.land_use in (93, 99)) 
+			-- temporarily non-stocked forest (3, 23, 73)
+			-- and stocked forest (5, 7, 25, 75)
+			where (p.forest_status in (3, 5, 7, 23, 25, 73, 75) or p.land_use in (93, 99))
 			and not p.accessibility > 2
 			and c.cluster_situation not in (1, 5)
-			;
 
 mappingId	bwi-invalid-plot
 target		d:PlotMainAreaSamplingStatus/bwi/{cluster_name}_{plot_name} a :InvalidPlot ; :isPlotSamplingStatusOf d:PlotMainArea/bwi/{cluster_name}_{plot_name} ; :inYear {inv_year} . 
 source		select inv_year, p.cluster_name, plot_name
-			from  inventory_archive.plot p 
+			from  inventory_archive.plot p
 			join inventory_archive.cluster c
 			on c.id = p.cluster_id
-			-- cluster not in inventory area or grid density area or 
+			-- cluster not in inventory area or grid density area or
 			-- plot not in inventory aree or grid density area
 			where c.cluster_situation  in (1, 5) or p.forest_status in (8, 9);
 
 mappingId	bwi-plot-not-accessible-forest
 target		d:PlotMainAreaSamplingStatus/bwi/{cluster_name}_{plot_name} a :NotAccessibleForestPlot ; :isPlotSamplingStatusOf d:PlotMainArea/bwi/{cluster_name}_{plot_name} ; :inYear {inv_year} . 
-source		select p.cluster_name, p.plot_name, p.inv_year 
+source		select p.cluster_name, p.plot_name, p.inv_year
 			from inventory_archive.plot p
 			join inventory_archive.cluster c
 			on c.id = p.cluster_id
-			where p.accessibility  > 1 
-			      and ( p.forest_status  in (3, 5, 7, 23, 25, 73, 75)
-			            or p.land_use in (93, 99))
-			      and  c.cluster_situation not in (1, 5);
+			where p.accessibility  > 1
+			and ( p.forest_status  in (3, 5, 7, 23, 25, 73, 75)
+			or p.land_use in (93, 99))
+			and  c.cluster_situation not in (1, 5);
 
 mappingId	bwi-plot-not-accessible-nonforest
 target		d:PlotMainAreaSamplingStatus/bwi/{cluster_name}_{plot_name} a :NotAccessibleNonforestPlot ; :isPlotSamplingStatusOf d:PlotMainArea/bwi/{cluster_name}_{plot_name} ; :inYear {inv_year} . 
-source		select p.cluster_name, p.plot_name, p.inv_year 
+source		select p.cluster_name, p.plot_name, p.inv_year
 			from inventory_archive.plot p
 			join inventory_archive.cluster c
 			on c.id = p.cluster_id
-			where p.accessibility  > 1 
-			      and ( p.forest_status  not in (3, 5, 7, 23, 25, 73, 75)
-			            or p.land_use not in (93, 99))
-			      and  c.cluster_situation not in (1, 5);
+			where p.accessibility  > 1
+			and ( p.forest_status  not in (3, 5, 7, 23, 25, 73, 75)
+			or p.land_use not in (93, 99))
+			and  c.cluster_situation not in (1, 5);
 
 mappingId	bwi-plot-sampled-only-nonforest
 target		d:PlotMainAreaSamplingStatus/bwi/{cluster_name}_{plot_name} a :SampledOnlyNonForestPlot ; :isPlotSamplingStatusOf d:PlotMainArea/bwi/{cluster_name}_{plot_name} ; :inYear {inv_year} . 
@@ -229,10 +228,168 @@ source		select p.cluster_name, p.plot_name, p.inv_year
 			from  inventory_archive.plot p
 			join inventory_archive.cluster c
 			on c.id = p.cluster_id
-			where (p.forest_status in (6, 10, 4, 24, 74) or land_use not in (93, 99)) 
-			 and c.cluster_status not in (4, 5)
-			 and not (p.forest_status in (3, 5, 7, 23, 25, 73, 75) or p.land_use  in (93, 99))
-			 and not c.cluster_situation in (1, 5)
-			 and not p.accessibility > 1;
+			where (p.forest_status in (6, 10, 4, 24, 74) or land_use not in (93, 99))
+			and c.cluster_status not in (4, 5)
+			and not (p.forest_status in (3, 5, 7, 23, 25, 73, 75) or p.land_use  in (93, 99))
+			and not c.cluster_situation in (1, 5)
+			and not p.accessibility > 1;
+
+mappingId	fia-plot-subarea
+target		d:PlotSubArea/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{cond_status_cd}-{reservcd}-{owncd}-{fldtypcd}-{fldszcd}-{stdorgcd}-{mapden} a :PlotSubArea ; geo:sfWithin d:PlotMainArea/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp} . 
+source		select sc.plt_cn as scplt, sc.statecd, sc.unitcd, sc.countycd, sc.plot, sc.subp, sc.invyr,
+			  c.condid, c.cond_status_cd, c.reservcd, c.owncd, c.fldtypcd, c.mapden, c.fldszcd, c.stdorgcd,
+			  sc.micrcond_prop, sc.macrcond_prop, sc.subpcond_prop,
+			  s.macrcond, sc.macrcond_prop, p.macro_breakpoint_dia, s.subpcond, sc.subpcond_prop, s.micrcond, sc.micrcond_prop 
+			from fia.cond c 
+			join fia.subp_cond sc
+			on sc.plt_cn = c.plt_cn and
+			   sc.condid  = c.condid 
+			join fia.subplot s 
+			on sc.plt_cn = s.plt_cn and 
+			   sc.subp = s.subp
+			join fia.plot p
+			on sc.plt_cn = p.cn;
+
+mappingId	fia-forest-plot-subarea
+target		d:PlotSubArea/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{cond_status_cd}-{reservcd}-{owncd}-{fldtypcd}-{fldszcd}-{stdorgcd}-{mapden} a :ForestPlotSubarea . 
+source		select sc.plt_cn as scplt, sc.statecd, sc.unitcd, sc.countycd, sc.plot, sc.subp, sc.invyr, sc.nonsampled_status,
+			  c.condid, c.cond_status_cd, c.reservcd, c.owncd, c.fldtypcd, c.mapden, c.fldszcd, c.stdorgcd,
+			  sc.micrcond_prop, sc.macrcond_prop, sc.subpcond_prop,
+			  s.macrcond, sc.macrcond_prop, p.macro_breakpoint_dia, s.subpcond, sc.subpcond_prop, s.micrcond, sc.micrcond_prop 
+			from fia.cond c 
+			join fia.subp_cond sc
+			on sc.plt_cn = c.plt_cn and
+			   sc.condid  = c.condid 
+			join fia.subplot s 
+			on sc.plt_cn = s.plt_cn and 
+			   sc.subp = s.subp
+			join fia.plot p
+			on sc.plt_cn = p.cn
+			where (c.cond_status_cd = 1) or (c.cond_status_cd = 5 and sc.nonsampled_status = 1);
+
+mappingId	fia-plot-subarea-nonsampled-orgatizationally-impossible
+target		d:PlotSubAreaSamplingStatus/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{cond_status_cd}-{reservcd}-{owncd}-{fldtypcd}-{fldszcd}-{stdorgcd}-{mapden} a :OrganizationallyImpossiblePlot ; :isPlotSamplingStatusOf d:PlotSubArea/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{cond_status_cd}-{reservcd}-{owncd}-{fldtypcd}-{fldszcd}-{stdorgcd}-{mapden} ; :inYear {invyr} . 
+source		select sc.plt_cn as scplt, sc.statecd, sc.unitcd, sc.countycd, sc.plot, sc.subp, sc.invyr, sc.nonsampled_status,
+			  c.condid, c.cond_status_cd, c.reservcd, c.owncd, c.fldtypcd, c.mapden, c.fldszcd, c.stdorgcd,
+			  sc.micrcond_prop, sc.macrcond_prop, sc.subpcond_prop,
+			  s.macrcond, sc.macrcond_prop, p.macro_breakpoint_dia, s.subpcond, sc.subpcond_prop, s.micrcond, sc.micrcond_prop 
+			from fia.cond c 
+			join fia.subp_cond sc
+			on sc.plt_cn = c.plt_cn and
+			   sc.condid  = c.condid 
+			join fia.subplot s 
+			on sc.plt_cn = s.plt_cn and 
+			   sc.subp = s.subp
+			join fia.plot p
+			on sc.plt_cn = p.cn
+			where  c.cond_status_cd = 5 and 
+			       c.cond_nonsample_reasn_cd in (5, 8);
+
+mappingId	fia-plot-subarea-nonsampled
+target		d:PlotSubAreaSamplingStatus/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{cond_status_cd}-{reservcd}-{owncd}-{fldtypcd}-{fldszcd}-{stdorgcd}-{mapden} a :NonsampledPlot ; :isPlotSamplingStatusOf d:PlotSubArea/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{cond_status_cd}-{reservcd}-{owncd}-{fldtypcd}-{fldszcd}-{stdorgcd}-{mapden} ; :inYear {invyr} . 
+source		select sc.plt_cn as scplt, sc.statecd, sc.unitcd, sc.countycd, sc.plot, sc.subp, sc.invyr, sc.nonsampled_status,
+			  c.condid, c.cond_status_cd, c.reservcd, c.owncd, c.fldtypcd, c.mapden, c.fldszcd, c.stdorgcd,
+			  sc.micrcond_prop, sc.macrcond_prop, sc.subpcond_prop,
+			  s.macrcond, sc.macrcond_prop, p.macro_breakpoint_dia, s.subpcond, sc.subpcond_prop, s.micrcond, sc.micrcond_prop 
+			from fia.cond c 
+			join fia.subp_cond sc
+			on sc.plt_cn = c.plt_cn and
+			   sc.condid  = c.condid 
+			join fia.subplot s 
+			on sc.plt_cn = s.plt_cn and 
+			   sc.subp = s.subp
+			join fia.plot p
+			on sc.plt_cn = p.cn
+			where  c.cond_status_cd = 5 and 
+			       c.cond_nonsample_reasn_cd in (10);
+
+mappingId	fia-forest-plot-subarea-nonsampled-not-accessible
+target		d:PlotSubAreaSamplingStatus/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{cond_status_cd}-{reservcd}-{owncd}-{fldtypcd}-{fldszcd}-{stdorgcd}-{mapden} a :NotAccessibleForestPlot ; :isPlotSamplingStatusOf d:PlotSubArea/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{cond_status_cd}-{reservcd}-{owncd}-{fldtypcd}-{fldszcd}-{stdorgcd}-{mapden} ; :inYear {invyr} . 
+source		select sc.plt_cn as scplt, sc.statecd, sc.unitcd, sc.countycd, sc.plot, sc.subp, sc.invyr, sc.nonsampled_status,
+			  c.condid, c.cond_status_cd, c.reservcd, c.owncd, c.fldtypcd, c.mapden, c.fldszcd, c.stdorgcd,
+			  sc.micrcond_prop, sc.macrcond_prop, sc.subpcond_prop,
+			  s.macrcond, sc.macrcond_prop, p.macro_breakpoint_dia, s.subpcond, sc.subpcond_prop, s.micrcond, sc.micrcond_prop 
+			from fia.cond c 
+			join fia.subp_cond sc
+			on sc.plt_cn = c.plt_cn and
+			   sc.condid  = c.condid 
+			join fia.subplot s 
+			on sc.plt_cn = s.plt_cn and 
+			   sc.subp = s.subp
+			join fia.plot p
+			on sc.plt_cn = p.cn
+			where  c.cond_status_cd = 5 and 
+			       sc.nonsampled_status = 1 and 
+			       c.cond_nonsample_reasn_cd in (2, 3);
+
+mappingId	fia-forest-plot-subarea-sampled
+target		d:PlotSubAreaSamplingStatus/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{cond_status_cd}-{reservcd}-{owncd}-{fldtypcd}-{fldszcd}-{stdorgcd}-{mapden} a :SampledWithForestPlot ; :isPlotSamplingStatusOf d:PlotSubArea/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{cond_status_cd}-{reservcd}-{owncd}-{fldtypcd}-{fldszcd}-{stdorgcd}-{mapden} ; :inYear {invyr} . 
+source		select sc.plt_cn as scplt, sc.statecd, sc.unitcd, sc.countycd, sc.plot, sc.subp, sc.invyr, sc.nonsampled_status,
+			  c.condid, c.cond_status_cd, c.reservcd, c.owncd, c.fldtypcd, c.mapden, c.fldszcd, c.stdorgcd,
+			  sc.micrcond_prop, sc.macrcond_prop, sc.subpcond_prop,
+			  s.macrcond, sc.macrcond_prop, p.macro_breakpoint_dia, s.subpcond, sc.subpcond_prop, s.micrcond, sc.micrcond_prop 
+			from fia.cond c 
+			join fia.subp_cond sc
+			on sc.plt_cn = c.plt_cn and
+			   sc.condid  = c.condid 
+			join fia.subplot s 
+			on sc.plt_cn = s.plt_cn and 
+			   sc.subp = s.subp
+			join fia.plot p
+			on sc.plt_cn = p.cn
+			where c.cond_status_cd = 1;
+
+mappingId	fia-nonforest-plotsubarea
+target		d:PlotSubArea/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{cond_status_cd}-{reservcd}-{owncd}-{fldtypcd}-{fldszcd}-{stdorgcd}-{mapden} a :NonForestPlotSubarea . 
+source		select sc.plt_cn as scplt, sc.statecd, sc.unitcd, sc.countycd, sc.plot, sc.subp, sc.invyr, sc.nonsampled_status,
+			  c.condid, c.cond_status_cd, c.reservcd, c.owncd, c.fldtypcd, c.mapden, c.fldszcd, c.stdorgcd,
+			  sc.micrcond_prop, sc.macrcond_prop, sc.subpcond_prop,
+			  s.macrcond, sc.macrcond_prop, p.macro_breakpoint_dia, s.subpcond, sc.subpcond_prop, s.micrcond, sc.micrcond_prop 
+			from fia.cond c 
+			join fia.subp_cond sc
+			on sc.plt_cn = c.plt_cn and
+			   sc.condid  = c.condid 
+			join fia.subplot s 
+			on sc.plt_cn = s.plt_cn and 
+			   sc.subp = s.subp
+			join fia.plot p
+			on sc.plt_cn = p.cn
+			where (c.cond_status_cd in (2, 3, 4)) or (c.cond_status_cd = 5 and sc.nonsampled_status = 2);
+
+mappingId	fia-nonforest-plot-subarea-sampled
+target		d:PlotSubAreaSamplingStatus/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{cond_status_cd}-{reservcd}-{owncd}-{fldtypcd}-{fldszcd}-{stdorgcd}-{mapden} a :SampledOnlyNonForestPlot ; :isPlotSamplingStatusOf d:PlotSubArea/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{cond_status_cd}-{reservcd}-{owncd}-{fldtypcd}-{fldszcd}-{stdorgcd}-{mapden} ; :inYear {invyr} . 
+source		select sc.plt_cn as scplt, sc.statecd, sc.unitcd, sc.countycd, sc.plot, sc.subp, sc.invyr, sc.nonsampled_status,
+			  c.condid, c.cond_status_cd, c.reservcd, c.owncd, c.fldtypcd, c.mapden, c.fldszcd, c.stdorgcd,
+			  sc.micrcond_prop, sc.macrcond_prop, sc.subpcond_prop,
+			  s.macrcond, sc.macrcond_prop, p.macro_breakpoint_dia, s.subpcond, sc.subpcond_prop, s.micrcond, sc.micrcond_prop 
+			from fia.cond c 
+			join fia.subp_cond sc
+			on sc.plt_cn = c.plt_cn and
+			   sc.condid  = c.condid 
+			join fia.subplot s 
+			on sc.plt_cn = s.plt_cn and 
+			   sc.subp = s.subp
+			join fia.plot p
+			on sc.plt_cn = p.cn
+			where c.cond_status_cd in (2, 3, 4);
+
+mappingId	fia-nonforest-plot-subare-nonsampled-not-accessible
+target		d:PlotSubAreaSamplingStatus/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{cond_status_cd}-{reservcd}-{owncd}-{fldtypcd}-{fldszcd}-{stdorgcd}-{mapden} a :NotAccessibleNonforestPlot ; :isPlotSamplingStatusOf d:PlotSubArea/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{cond_status_cd}-{reservcd}-{owncd}-{fldtypcd}-{fldszcd}-{stdorgcd}-{mapden} ; :inYear {invyr} . 
+source		select sc.plt_cn as scplt, sc.statecd, sc.unitcd, sc.countycd, sc.plot, sc.subp, sc.invyr, sc.nonsampled_status,
+			  c.condid, c.cond_status_cd, c.reservcd, c.owncd, c.fldtypcd, c.mapden, c.fldszcd, c.stdorgcd,
+			  sc.micrcond_prop, sc.macrcond_prop, sc.subpcond_prop,
+			  s.macrcond, sc.macrcond_prop, p.macro_breakpoint_dia, s.subpcond, sc.subpcond_prop, s.micrcond, sc.micrcond_prop 
+			from fia.cond c 
+			join fia.subp_cond sc
+			on sc.plt_cn = c.plt_cn and
+			   sc.condid  = c.condid 
+			join fia.subplot s 
+			on sc.plt_cn = s.plt_cn and 
+			   sc.subp = s.subp
+			join fia.plot p
+			on sc.plt_cn = p.cn
+			where  c.cond_status_cd = 5 and 
+			       sc.nonsampled_status = 2 and 
+			       c.cond_nonsample_reasn_cd in (2, 3);
 ]]
 

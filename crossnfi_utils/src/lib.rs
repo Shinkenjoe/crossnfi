@@ -52,7 +52,6 @@ pub struct TableNames {
 /// 3. location longitude / x - coordinate 
 /// 4. column name which to use for creating the template cluster code
 
-#[allow(unused_variables)]
 pub async fn template_identification(
     client: &Client, 
     table_names: TableNames, 
@@ -530,11 +529,195 @@ fn create_cluster_plot_sql_fragments(cluster_columns: Vec<String>,
 }
 
 
+fn create_status_code_tuples<T>(codes : &Vec<T>) -> 
+    Result<String, Box<dyn std::error::Error + Send + Sync + 'static>> 
+where T: std::fmt::Display {
+        if codes.is_empty() {
+            return Err("sql tuple codes are not given".into()); 
+        }
+        let mut result = format!("( {}", codes[0]);
+        for code in codes.iter().skip(1) {
+            let code_string = format!(", {}", code);
+            result.push_str(&code_string);
+        }
+        result.push_str(" )");
+        Ok(result)        
+}
+
+
+/// create a view in fia holding plot subarea data
+pub async fn fia_create_plot_subarea_view(client: &Client) -> 
+    Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+        let drop_query = "drop view if exists fia.plot_subarea;";
+        let view_query = "
+          create view fia.plot_subarea as
+              (select sc.plt_cn as scplt, sc.statecd, sc.unitcd,
+                      sc.countycd, sc.plot, sc.subp, sc.invyr,
+                      c.condid, c.cond_status_cd, c.reservcd, c.owncd, 
+                      c.fldtypcd, c.mapden, c.fldszcd, c.stdorgcd,
+                      s.macrcond, sc.macrcond_prop, p.macro_breakpoint_dia,
+                      s.subpcond, sc.subpcond_prop, s.micrcond, sc.micrcond_prop 
+                from fia.cond c 
+                join fia.subp_cond sc
+                     on sc.plt_cn = c.plt_cn and
+                        sc.condid  = c.condid 
+                join fia.subplot s 
+                     on sc.plt_cn = s.plt_cn and 
+                        sc.subp = s.subp
+                join fia.plot p
+                     on sc.plt_cn = p.cn);";
+        client.execute(drop_query, &[])
+            .await.expect("dropping the fia plot subarea view did not work!");
+        client.execute(view_query, &[])
+            .await.expect("creating the fia plot subarea view did not work!");
+        Ok(())
+    }
+
+/// for plot subareas which are nonsampled create a column denoting if they are
+/// forest plot subareas or nonforest plot subareas. 
+/// plot subareas which besides the nonsampled status only have nonforest land use, 
+/// will be interpreted as nonsampled nonforest plot subareas, all other as
+/// nonsampled forest plot subareas
+/// table name holds 
+/// - the table holding plot subarea in the table_name slot
+/// - the name of the table to be updated in source_columns[0]
+/// - the name of the column holding the status codes in source_colums[1]
+#[allow(unused_variables)]
+pub async fn classify_nonsampled_plot_subareas(
+    client: &Client, 
+    table_names: TableNames, 
+    forest_codes : Vec<i64>, 
+    nonforest_codes : Vec<i64>, 
+    nonsampled_codes: Vec<i64>, 
+) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+
+    let TableNames { 
+        schema_name : schema, 
+        table_name  : table, 
+        cluster_columns , 
+        plot_column, 
+        year_column, 
+
+        source_columns 
+    } = table_names;
+    let year = year_column.expect("no year_column given");
+    let [table_to_update, sampling_status] = source_columns.try_into()
+        .expect("table_names.source_columns: table to update, sampling status columns");
+    let nonsampled_status = "nonsampled_status";  
+
+
+
+     // SQL list string to test for codes with the in operator "( 4 )" or "( 6, 7 )"
+    let forest = create_status_code_tuples(&forest_codes)?;
+    let nonforest = create_status_code_tuples(&nonforest_codes)?;
+    let nonsampled = create_status_code_tuples(&nonsampled_codes)?;
+    
+    // cluster and plot sql fragments for joining 
+    let (cluster_plot, join_plot, _) = create_cluster_plot_sql_fragments(
+        cluster_columns.clone(), plot_column.clone());
+
+    
+    // drop and create the column for holding the templates
+    let drop_query = format!(
+        "alter table {schema}.{table_to_update} 
+             drop column if exists {nonsampled_status};");
+    client.execute(&drop_query, &[]).await?;
+    
+    let create_query = format!(
+        "alter table {schema}.{table_to_update} 
+             add column {nonsampled_status} bigint;");
+    client.execute(&create_query, &[]).await?;
+
+    let drop_nonsampled_plots = "drop table if exists nonsampled_plots";
+    client.execute(drop_nonsampled_plots, &[]).await?;
+    
+    let create_nonsampled_plots = format!("
+        create temporary table nonsampled_plots as 
+            (select distinct {cluster_plot} 
+             from {schema}.{table} m
+             where {sampling_status} in {nonsampled});
+        ");
+    client.execute(&create_nonsampled_plots, &[]).await?;
+    
+    let rows = client.query("select * from nonsampled_plots;", &[]).await?;
+
+    // for each plot assess if it is a nonforest only plot separately
+    // 1. select all plot subarea data for that plot 
+    // 2. test if there is nonforest only or not
+    // 3. update the nonsampled_status column accordingly
+
+    for row in rows {
+        let mut plot_restriction = String::new();
+        // the length of the row corresponds to the length of the fields in cluster_columns
+        // and plot_column
+        for idx in 0..row.len()-1 {
+            let id : i64 = row.try_get(idx)?;
+            plot_restriction.push_str(
+                format!(" m.{} = {} and \n", cluster_columns[idx], id).as_str());
+        }
+        if let Some(ref plot) = plot_column {
+           let id : i64 = row.try_get(row.len()-1)?;
+           plot_restriction.push_str(
+               format!(" m.{} = {} and \n", plot, id).as_str());
+        }
+        for idx in 0..5 { plot_restriction.pop();}
+        plot_restriction.push('\n');        
+        
+        let plot_selection_query = format!("
+            select {cluster_plot}, m.{year}, m.{sampling_status}
+            from {schema}.{table} m
+            where {plot_restriction} ;");
+        let plot_subarea_rows = client.query(&plot_selection_query, &[]).await?;
+        let mut forest_appeared = false;
+        let mut nonsampled_only = true;
+        let mut nonsample_years : Vec<i64> = Vec::new();
+        for subarea_row in plot_subarea_rows {
+            let code : i64 = subarea_row.try_get(subarea_row.len()-1)?;
+            let year : i64 = subarea_row.try_get(subarea_row.len()-2)?;
+            if forest_codes.contains(&code) { 
+                forest_appeared = true; 
+            }
+            if nonsampled_codes.contains(&code) {
+                nonsample_years.push(year);}
+            else {
+                nonsampled_only = false;
+            }             
+        }
+        let update_code : i64 = if forest_appeared || nonsampled_only {
+            forest_codes[0] 
+        } else {
+            nonforest_codes[0]
+        };
+
+        let update_years = create_status_code_tuples(&nonsample_years)?;
+
+        let plot_update_query = format!("        
+          update {schema}.{table_to_update} m
+          set {nonsampled_status} = {update_code}
+          where {year} in {update_years} and {plot_restriction};");
+        client.execute(&plot_update_query, &[]).await?;
+        
+        
+
+    }
+   
+    
+        
+    
+    
+    Ok(())
+
+
+        
+}
+
+
 struct ConnectionParameters {
     user : String, 
     password : String, 
     database : String,
 }
+
 
 
 /// connect to the crossnfi database
@@ -815,4 +998,41 @@ m.PLOT = luy.PLOT and
             assert_eq!(orig_prev, deriv_prev);
         }
     } 
+
+
+
+    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    #[allow(unused_variables)]
+    async fn test_classify_nonsampled_plot_subareas(        
+                      connect_testdb : impl Future<Output=Client>){
+        let client = connect_testdb.await;
+        let table_names = TableNames { 
+            schema_name: "test".to_string(), 
+            // table / view holding the data
+            table_name: "plotsub".to_string(), 
+            cluster_columns: vec!["cluster_id1".to_string(), "cluster_id2".to_string()], 
+            plot_column: Some("plot_id".to_string()) , 
+            year_column: Some("test_year".to_string()) ,
+            // 1. table to create the columnn in 
+            // 2. status code column name in data table
+            source_columns: vec!["plotsub".to_string(), 
+                                 "status_cd".to_string()],
+        };
+        // table_names, forest codes, nonforest codes, nonsampled code
+        classify_nonsampled_plot_subareas(&client, table_names, 
+                                          vec![1], vec![2], vec![5]).await.unwrap();
+        let rows = client.query(
+            "select s.nonsampled_status, s.expected_nonsampled_status
+             from test.plotsub s;", &[])
+        .await.expect("could not query test db after col creation");        
+        for row in rows {
+            let orig : Option<i64> = row.try_get(0).expect("orig in test could not be found");
+            let deriv : Option<i64> = row.try_get(1).expect("deriv in test could not be found");     
+            assert_eq!(orig, deriv);            
+        }
+
+
+    }
+
 }

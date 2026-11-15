@@ -12,6 +12,7 @@
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 @prefix unit: <http://qudt.org/vocab/unit/> .
 @prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix quantitykind: <http://qudt.org/vocab/quantitykind/> .
 @base <https://www.easi.uni-bayreuth.de/crossnfi#> .
 
 <https://www.easi.uni-bayreuth.de/crossnfi> rdf:type owl:Ontology ;
@@ -65,6 +66,30 @@ skos:prefLabel rdf:type owl:AnnotationProperty ;
 #################################################################
 #    Object Properties
 #################################################################
+
+###  http://qudt.org/schema/qudt/hasQuantitKind
+qudt:hasQuantitKind rdf:type owl:ObjectProperty ;
+                    rdfs:subPropertyOf owl:topObjectProperty ;
+                    rdfs:range qudt:QuantityKind ;
+                    skos:prefLabel "has Quantity Kind"@en ,
+                                   "hat Maß-Sorte"@de ,
+                                   "tiene tipo de cantidad"@es .
+
+
+###  http://qudt.org/schema/qudt/hasUnit
+qudt:hasUnit rdf:type owl:ObjectProperty ;
+             rdfs:range qudt:Unit ;
+             dcterms:description """This property relates a factor unit to its unit or system of units with a unit of measure that is either:
+
+    a) defined by the system,
+    b) accepted for use by the system and is convertible to a unit of equivalent dimension that is defined by the system,
+    c) a reference to the unit of measure of a quantity (variable or constant) of interest.
+
+Systems of units may distinguish between base and derived units. Base units are the units which measure the base quantities for the corresponding system of quantities. The base units are used to define units for all other quantities as products of powers of the base units. Such units are called derived units for the system."""@en ;
+             skos:prefLabel "has unit"@en ,
+                            "hat Einheit"@de ,
+                            "tiene unidad"@es .
+
 
 ###  http://www.opengis.net/ont/geosparql#hasGeometry
 geo:hasGeometry rdf:type owl:ObjectProperty ;
@@ -147,6 +172,7 @@ Range:  a plot area"""@en ;
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#contains
 :contains rdf:type owl:ObjectProperty ;
+          owl:inverseOf :isPartOf ;
           rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
           skos:note "structural parthood in the sense of Keet, 2025 Ontology Engineering"@en ;
           skos:prefLabel "contains"@en ,
@@ -208,6 +234,15 @@ Plot"""@en ;
            skos:prefLabel "beschreibt"@de ,
                           "describes"@en ,
                           "describes"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#hasAreaShare
+:hasAreaShare rdf:type owl:ObjectProperty ;
+              rdfs:subPropertyOf :hasQuality ;
+              skos:definition "relates a plot subarea to the share it has of its plot main area"@en ;
+              skos:prefLabel "has area share"@en ,
+                             "hat Flächenanteil"@de ,
+                             "tiene parte de área"@es .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#hasAsPlot
@@ -366,7 +401,7 @@ entities for which there is data to be found at a plot. These entities are sampl
                        rdfs:subPropertyOf :isClassifiedAs ;
                        owl:inverseOf :isPlotSamplingStatusOf ;
                        rdfs:domain :PlotMainArea ;
-                       rdfs:range :PlotMainAreaSamplingStatus ;
+                       rdfs:range :PlotAreaSamplingStatus ;
                        rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
                        skos:definition "relates a plot main area to its plot sampling status classification"@en ;
                        skos:prefLabel "has plot sampling status"@en ,
@@ -550,7 +585,7 @@ Range: a sample or data collections like a national forest inventory, a cluster 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#isPlotSamplingStatusOf
 :isPlotSamplingStatusOf rdf:type owl:ObjectProperty ;
                         rdfs:subPropertyOf :classifies ;
-                        rdfs:domain :PlotMainAreaSamplingStatus ;
+                        rdfs:domain :PlotAreaSamplingStatus ;
                         rdfs:range :PlotMainArea ;
                         rdfs:isDefinedBy "https://www.easi.uni-bayreuth.de/crossnfi" ;
                         skos:definition "relates a plot sampling status classification to a plot main area with the corresponding sampling status"@en ;
@@ -607,6 +642,14 @@ Range: a sample or data collections like a national forest inventory, a cluster 
 #    Data properties
 #################################################################
 
+###  http://qudt.org/schema/qudt/value
+qudt:value rdf:type owl:DatatypeProperty ;
+           dcterms:description "A property to relate an observable thing with a value expressed as a decimal"@en ;
+           skos:prefLabel "Wert"@de ,
+                          "valor"@es ,
+                          "value"@en .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#inYear
 :inYear rdf:type owl:DatatypeProperty ;
         rdfs:range xsd:integer ;
@@ -639,7 +682,29 @@ divided by time). In this way, some quantities can be calculated from other meas
 expressions. These quantity kind relationships are also discussed in dimensional analysis. Those that cannot be so expressed can be regarded 
 as \"fundamental\" in this sense.</p>
 <p>A quantity is distinguished from a \"quantity kind\" in that the former carries a value and the latter is a type specifier.
-</p>""" .
+</p>""" ;
+              rdfs:isDefinedBy <http://qudt.org/3.5.3/schema/qudt> ;
+              skos:prefLabel "Maß"@de ,
+                             "cantidad"@es .
+
+
+###  http://qudt.org/schema/qudt/QuantityKind
+qudt:QuantityKind rdf:type owl:Class ;
+                  dcterms:description "A Quantity Kind is any observable property that can be measured and quantified numerically. Familiar examples include physical properties such as length, mass, time, force, energy, power, electric charge, etc. Less familiar examples include currency, interest rate, price to earning ratio, and information capacity."@en ;
+                  rdfs:isDefinedBy <http://qudt.org/3.5.3/schema/qudt> ;
+                  skos:broader "bfo: generally dependent entity"@en ;
+                  skos:prefLabel "Maß-Sorte"@de ,
+                                 "Quantity Kind"@en ,
+                                 "tipo de cantidaes"@es .
+
+
+###  http://qudt.org/schema/qudt/Unit
+qudt:Unit rdf:type owl:Class ;
+          dcterms:description "A unit of measure, or unit, is a particular quantity value that has been chosen as a scale for measuring other quantities the same kind (more generally of equivalent dimension). For example, the meter is a quantity of length that has been rigorously defined and standardized by the BIPM (International Board of Weights and Measures). Any measurement of the length can be expressed as a number multiplied by the unit meter. More formally, the value of a physical quantity Q with respect to a unit (U) is expressed as the scalar multiple of a real number (n) and U, as Q = nU."@en ;
+          rdfs:isDefinedBy <http://qudt.org/3.5.3/schema/qudt> ;
+          skos:prefLabel "Einheit"@de ,
+                         "Unit"@en ,
+                         "unidad"@es .
 
 
 ###  http://www.opengis.net/ont/geosparql#Feature
@@ -773,6 +838,17 @@ Forest and Stand borders in the sample tree's and/or central point's vicinity ar
                      "área"@es .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#AreaShare
+:AreaShare rdf:type owl:Class ;
+           rdfs:subClassOf :Quantity ;
+           skos:definition "the share an area takes up of another area it is contained ine"@en ;
+           skos:note """thiis is used to describe the shae a  FIA condition area takes up in a FIA subplot or 
+macroplot"""@en ;
+           skos:prefLabel "Flächenanteil"@de ,
+                          "parte da área"@es ,
+                          "area share" .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#Aspect
 :Aspect rdf:type owl:Class ;
         rdfs:subClassOf :Quantity ;
@@ -833,7 +909,7 @@ Forest and Stand borders in the sample tree's and/or central point's vicinity ar
 :Classification rdf:type owl:Class ;
                 owl:equivalentClass [ rdf:type owl:Restriction ;
                                       owl:onProperty :classifies ;
-                                      owl:someValuesFrom owl:Thing
+                                      owl:someValuesFrom :PlotArea
                                     ] ;
                 rdfs:subClassOf :Quality ;
                 dcterms:description """The classification is  dependent on some quality not directly measured, but assesed 
@@ -1293,7 +1369,7 @@ In Germany often identical with NUTS1."""@en ;
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#NonsampledPlot
 :NonsampledPlot rdf:type owl:Class ;
-                rdfs:subClassOf :PlotMainAreaSamplingStatus ;
+                rdfs:subClassOf :PlotAreaSamplingStatus ;
                 rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
                 skos:definition "a plot subarea which was not sampled"@en ;
                 skos:note "this includes plot main areas that fall under the umbrella of \"other reason\" classifications"@en ;
@@ -1433,6 +1509,28 @@ The US FIA either includes them in the forest if they don't meet the relevant si
                          "área de  parcela"@es .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#PlotAreaClassification
+:PlotAreaClassification rdf:type owl:Class ;
+                        rdfs:subClassOf :Classification ;
+                        skos:prefLabel "Klassifikation einer Plotfläche"@de ,
+                                       "clasificación de una areá de parcela"@es ,
+                                       "plot area classification"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#PlotAreaSamplingStatus
+:PlotAreaSamplingStatus rdf:type owl:Class ;
+                        owl:equivalentClass [ rdf:type owl:Restriction ;
+                                              owl:onProperty :isPlotSamplingStatusOf ;
+                                              owl:someValuesFrom :PlotMainArea
+                                            ] ;
+                        rdfs:subClassOf :PlotAreaClassification ;
+                        rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
+                        skos:definition "classification of a plot area on if it was sampled or not. If negative also gives the reason. Is used for both plot main areas and plot subareas."@en ;
+                        skos:prefLabel "Erfassungszustand einer Plotfläche"@de ,
+                                       "estado de muestreo de un areá  de parcela"@es ,
+                                       "sampling status of a plot area"@en .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#PlotBioticProcess
 :PlotBioticProcess rdf:type owl:Class ;
                    rdfs:subClassOf :BioticProcess ;
@@ -1536,28 +1634,6 @@ Generally there is no explicit definition, but it generally is the circle area o
               skos:prefLabel "Plot-Hauptgebiet"@de ,
                              "plot main area"@en ,
                              "área principal de parcela"@es .
-
-
-###  https://www.easi.uni-bayreuth.de/crossnfi#PlotMainAreaClassification
-:PlotMainAreaClassification rdf:type owl:Class ;
-                            rdfs:subClassOf :Classification ;
-                            skos:prefLabel "Klassifikation eines Plot-Hauptgebietes"@de ,
-                                           "clasificación de una areá principal de parcela"@es ,
-                                           "plot main area classification"@en .
-
-
-###  https://www.easi.uni-bayreuth.de/crossnfi#PlotMainAreaSamplingStatus
-:PlotMainAreaSamplingStatus rdf:type owl:Class ;
-                            owl:equivalentClass [ rdf:type owl:Restriction ;
-                                                  owl:onProperty :isPlotSamplingStatusOf ;
-                                                  owl:someValuesFrom :PlotMainArea
-                                                ] ;
-                            rdfs:subClassOf :PlotMainAreaClassification ;
-                            rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
-                            skos:definition "classification of a plot main area on if it was sampled or not. If negative also gives the reason."@en ;
-                            skos:prefLabel "Erfassungszustand einer Plot-Hauptfläche"@de ,
-                                           "estado de muestreo de un areá principal de parcela"@es ,
-                                           "sampling status of a plot main area"@en .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#PlotSubArea
@@ -1833,7 +1909,7 @@ Thus it does not meet the criteria for forest vegetation, but did so in the past
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#SampledPlot
 :SampledPlot rdf:type owl:Class ;
-             rdfs:subClassOf :PlotMainAreaSamplingStatus ;
+             rdfs:subClassOf :PlotAreaSamplingStatus ;
              rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
              skos:definition "a plot main area, that was sampled"@en ;
              skos:prefLabel "erfasst"@de ,
@@ -2148,6 +2224,22 @@ The Spanish IFN and the US FIA have  a finer classification, but the German BWI 
 #################################################################
 #    Individuals
 #################################################################
+
+###  http://qudt.org/vocab/quantitykind/DimensionlessRatio
+quantitykind:DimensionlessRatio rdf:type owl:NamedIndividual ,
+                                         qudt:QuantityKind ;
+                                rdfs:isDefinedBy <http://qudt.org/3.5.3/vocab/quantitykind> .
+
+
+###  http://qudt.org/vocab/unit/FRACTION
+unit:FRACTION rdf:type owl:NamedIndividual ,
+                       qudt:Unit ;
+              dcterms:description "Fraction is a unit for 'Dimensionless Ratio' expressed as the value of the ratio itself." ;
+              rdfs:isDefinedBy <http://qudt.org/3.5.3/vocab/unit> ;
+              skos:prefLabel "Anteil"@de ,
+                             "Fraction"@en ,
+                             "parte"@es .
+
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#bwi
 :bwi rdf:type owl:NamedIndividual ,
