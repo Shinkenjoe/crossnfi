@@ -2,6 +2,7 @@ use std::fs;
 use std::io::Read;
 use std::path::{PathBuf};
 use tokio::task::JoinHandle;
+use tokio_postgres::types::FromSqlOwned;
 use tokio_postgres::{connect, NoTls, Client };
 //use tokio_postgres::row::Row;
 // use std::any::Any;
@@ -121,7 +122,7 @@ pub async fn template_identification(
 
     
     // create sql fragments for select clauses and joining conditions
-    let (cluster_plot, join_plot, _) = 
+    let (cluster_plot, _join_plot, _) = 
         create_cluster_plot_sql_fragments(cluster_columns,plot_column);
 
     
@@ -552,11 +553,12 @@ pub async fn fia_create_plot_subarea_view(client: &Client) ->
         let view_query = "
           create view fia.plot_subarea as
               (select sc.plt_cn as scplt, sc.statecd, sc.unitcd,
-                      sc.countycd, sc.plot, sc.subp, sc.invyr,
+                      sc.countycd, sc.plot, sc.subp, sc.invyr, sc.nonsampled_status,
                       c.condid, c.cond_status_cd, c.reservcd, c.owncd, 
-                      c.fldtypcd, c.mapden, c.fldszcd, c.stdorgcd,
+                      c.fortypcd, c.mapden, c.stdszcd, c.stdorgcd,
+                      c.condprop_unadj, c.cond_nonsample_reasn_cd, 
                       s.macrcond, sc.macrcond_prop, p.macro_breakpoint_dia,
-                      s.subpcond, sc.subpcond_prop, s.micrcond, sc.micrcond_prop 
+                      s.subpcond, sc.subpcond_prop, s.micrcond, sc.micrcond_prop
                 from fia.cond c 
                 join fia.subp_cond sc
                      on sc.plt_cn = c.plt_cn and
@@ -583,13 +585,14 @@ pub async fn fia_create_plot_subarea_view(client: &Client) ->
 /// - the name of the table to be updated in source_columns[0]
 /// - the name of the column holding the status codes in source_colums[1]
 #[allow(unused_variables)]
-pub async fn classify_nonsampled_plot_subareas(
+pub async fn classify_nonsampled_plot_subareas<'a, T>(
     client: &Client, 
     table_names: TableNames, 
-    forest_codes : Vec<i64>, 
-    nonforest_codes : Vec<i64>, 
-    nonsampled_codes: Vec<i64>, 
-) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    forest_codes : Vec<T>, 
+    nonforest_codes : Vec<T>, 
+    nonsampled_codes: Vec<T>, 
+) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> 
+where T: FromSqlOwned + std::fmt::Display + PartialEq<T> + Copy {
 
     let TableNames { 
         schema_name : schema, 
@@ -646,17 +649,17 @@ pub async fn classify_nonsampled_plot_subareas(
     // 2. test if there is nonforest only or not
     // 3. update the nonsampled_status column accordingly
 
-    for row in rows {
+    for row in rows.iter() {
         let mut plot_restriction = String::new();
         // the length of the row corresponds to the length of the fields in cluster_columns
         // and plot_column
         for idx in 0..row.len()-1 {
-            let id : i64 = row.try_get(idx)?;
+            let id : T = (&row).try_get(idx)?;
             plot_restriction.push_str(
                 format!(" m.{} = {} and \n", cluster_columns[idx], id).as_str());
         }
         if let Some(ref plot) = plot_column {
-           let id : i64 = row.try_get(row.len()-1)?;
+           let id : T = row.try_get(row.len()-1)?;
            plot_restriction.push_str(
                format!(" m.{} = {} and \n", plot, id).as_str());
         }
@@ -670,10 +673,10 @@ pub async fn classify_nonsampled_plot_subareas(
         let plot_subarea_rows = client.query(&plot_selection_query, &[]).await?;
         let mut forest_appeared = false;
         let mut nonsampled_only = true;
-        let mut nonsample_years : Vec<i64> = Vec::new();
-        for subarea_row in plot_subarea_rows {
-            let code : i64 = subarea_row.try_get(subarea_row.len()-1)?;
-            let year : i64 = subarea_row.try_get(subarea_row.len()-2)?;
+        let mut nonsample_years : Vec<T> = Vec::new();
+        for subarea_row in plot_subarea_rows.iter() {
+            let code : T = (&subarea_row).try_get(subarea_row.len()-1)?;
+            let year : T = (&subarea_row).try_get(subarea_row.len()-2)?;
             if forest_codes.contains(&code) { 
                 forest_appeared = true; 
             }
@@ -683,7 +686,7 @@ pub async fn classify_nonsampled_plot_subareas(
                 nonsampled_only = false;
             }             
         }
-        let update_code : i64 = if forest_appeared || nonsampled_only {
+        let update_code : T = if forest_appeared || nonsampled_only {
             forest_codes[0] 
         } else {
             nonforest_codes[0]
@@ -1021,7 +1024,9 @@ m.PLOT = luy.PLOT and
         };
         // table_names, forest codes, nonforest codes, nonsampled code
         classify_nonsampled_plot_subareas(&client, table_names, 
-                                          vec![1], vec![2], vec![5]).await.unwrap();
+                                          vec![1 as i64],
+                                          vec![2 as i64],
+                                          vec![5 as i64]).await.unwrap();
         let rows = client.query(
             "select s.nonsampled_status, s.expected_nonsampled_status
              from test.plotsub s;", &[])

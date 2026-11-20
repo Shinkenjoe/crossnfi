@@ -23,3 +23,6 @@ target
 # users shall specify credentials themselves
 data/connection/user.txt
 data/connection/password.txt
+
+# we don't backup Cargo.lock
+Cargo.lock
