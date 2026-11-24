@@ -344,25 +344,25 @@ source		select p.cluster_name, p.plot_name, p.implementation, p.inv_year
 			and c.cluster_situation not in (1, 5);
 
 mappingId	fia-forest-vegetation-timber-stand
-target		d:StandSizeClass/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{cond_status_cd}-{reservcd}-{owncd}-{fortypcd}-{stdszcd}-{stdorgcd}-{mapden}_{invyr} a :TimberStand ; :inYear {invyr} ; :isStandSizeClassOf d:PlotSubArea/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{cond_status_cd}-{reservcd}-{owncd}-{fortypcd}-{stdszcd}-{stdorgcd}-{mapden}_{invyr} . 
+target		d:StandSizeClass/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{cond_status_cd}-{reservcd}-{owncd}-{fortypcd}-{stdszcd}-{stdorgcd}-{mapden}_{invyr} a :TimberStand ; :inYear {invyr} ; :isStandSizeClassOf d:PlotSubForestVegetation/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{cond_status_cd}-{reservcd}-{owncd}-{fortypcd}-{stdszcd}-{stdorgcd}-{mapden}_{invyr} . 
 source		select * from fia.plot_subarea
 			where (cond_status_cd = 1) or (cond_status_cd = 5 and nonsampled_status = 1)
 			and stdszcd = 1;
 
 mappingId	fia-forest-vegetation-young-stand
-target		d:StandSizeClass/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{cond_status_cd}-{reservcd}-{owncd}-{fortypcd}-{stdszcd}-{stdorgcd}-{mapden}_{invyr} a :YoungStand ; :inYear {invyr} ; :isStandSizeClassOf d:PlotSubArea/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{cond_status_cd}-{reservcd}-{owncd}-{fortypcd}-{stdszcd}-{stdorgcd}-{mapden}_{invyr} . 
+target		d:StandSizeClass/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{cond_status_cd}-{reservcd}-{owncd}-{fortypcd}-{stdszcd}-{stdorgcd}-{mapden}_{invyr} a :YoungStand ; :inYear {invyr} ; :isStandSizeClassOf d:PlotSubForestVegetation/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{cond_status_cd}-{reservcd}-{owncd}-{fortypcd}-{stdszcd}-{stdorgcd}-{mapden}_{invyr} . 
 source		select * from fia.plot_subarea
 			where (cond_status_cd = 1 or (cond_status_cd = 5 and nonsampled_status = 1))
 			and stdszcd in (2, 3);
 
 mappingId	fia-temporarily-nonstocked-forest
-target		d:StandSizeClass/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{cond_status_cd}-{reservcd}-{owncd}-{fortypcd}-{stdszcd}-{stdorgcd}-{mapden}_{invyr} a :TemporarilyNonstockedStand ; :isStandSizeClassOf d:PlotSubArea/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{cond_status_cd}-{reservcd}-{owncd}-{fortypcd}-{stdszcd}-{stdorgcd}-{mapden}_{invyr} ; :inYear {invyr} . d:LandUse/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{cond_status_cd}-{reservcd}-{owncd}-{fortypcd}-{stdszcd}-{stdorgcd}-{mapden}_{invyr} a :TemporarilyNonstockedForest ; :isLandUseOf d:PlotSubArea/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{cond_status_cd}-{reservcd}-{owncd}-{fortypcd}-{stdszcd}-{stdorgcd}-{mapden}_{invyr} ; :inYear {invyr} . 
+target		d:StandSizeClass/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{cond_status_cd}-{reservcd}-{owncd}-{fortypcd}-{stdszcd}-{stdorgcd}-{mapden}_{invyr} a :TemporarilyNonstockedStand ; :isStandSizeClassOf d:PlotSubForestVegetation/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{cond_status_cd}-{reservcd}-{owncd}-{fortypcd}-{stdszcd}-{stdorgcd}-{mapden}_{invyr} ; :inYear {invyr} . d:LandUse/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{cond_status_cd}-{reservcd}-{owncd}-{fortypcd}-{stdszcd}-{stdorgcd}-{mapden}_{invyr} a :TemporarilyNonstockedForest ; :isLandUseOf d:PlotSubArea/fia/{statecd}_{unitcd}_{countycd}_{plot}_{subp}_{cond_status_cd}-{reservcd}-{owncd}-{fortypcd}-{stdszcd}-{stdorgcd}-{mapden}_{invyr} ; :inYear {invyr} . 
 source		select * from fia.plot_subarea
 			where (cond_status_cd = 1) or (cond_status_cd = 5 and nonsampled_status = 1)
 			and stdszcd = 4;
 
 mappingId	bwi-forest-vegetation-timber-stand
-target		d:StandSizeClass/bwi/{cluster_name}_{plot_name}_{implementation}_{inv_year} a :TimberStand ; :isStandSizeClassOf d:PlotSubArea/bwi/{cluster_name}_{plot_name}_{implementation}_{inv_year} ; :inYear {inv_year} . 
+target		d:StandSizeClass/bwi/{cluster_name}_{plot_name}_{implementation}_{inv_year} a :TimberStand ; :isStandSizeClassOf d:PlotSubForestVegetation/bwi/{cluster_name}_{plot_name}_{implementation}_{inv_year} ; :inYear {inv_year} . 
 source		select p.cluster_name, p.plot_name, p.implementation, p.inv_year, p.stand_development_phase 
 			from inventory_archive.plot p
 			join inventory_archive.cluster c
@@ -373,7 +373,7 @@ source		select p.cluster_name, p.plot_name, p.implementation, p.inv_year, p.stan
 			and p.stand_development_phase > 1
 
 mappingId	bwi-temporarily-nonstocked-forest
-target		d:StandSizeClass/bwi/{cluster_name}_{plot_name}_{implementation}_{inv_year} a :TemporarilyNonstockedStand ; :isStandSizeClassOf d:PlotSubArea/bwi/{cluster_name}_{plot_name}_{implementation}_{inv_year} ; :inYear {inv_year} . d:LandUse/bwi/{cluster_name}_{plot_name}_{implementation}_{inv_year} a :TemporarilyNonstockedForest ; :isLandUseOf d:PlotSubArea/bwi/{cluster_name}_{plot_name}_{implementation}_{inv_year} ; :inYear {inv_year} . 
+target		d:StandSizeClass/bwi/{cluster_name}_{plot_name}_{implementation}_{inv_year} a :TemporarilyNonstockedStand ; :isStandSizeClassOf d:PlotSubForestVegetation/bwi/{cluster_name}_{plot_name}_{implementation}_{inv_year} ; :inYear {inv_year} . d:LandUse/bwi/{cluster_name}_{plot_name}_{implementation}_{inv_year} a :TemporarilyNonstockedForest ; :isLandUseOf d:PlotSubArea/bwi/{cluster_name}_{plot_name}_{implementation}_{inv_year} ; :inYear {inv_year} . 
 source		select p.cluster_name, p.plot_name, p.implementation, p.inv_year
 			from inventory_archive.plot p
 			join inventory_archive.cluster c
@@ -384,7 +384,7 @@ source		select p.cluster_name, p.plot_name, p.implementation, p.inv_year
 			and c.cluster_situation not in (1, 5);
 
 mappingId	bwi-forest-vegetation-young-stand
-target		d:StandSizeClass/bwi/{cluster_name}_{plot_name}_{implementation}_{inv_year} a :YoungStand ; :isStandSizeClassOf d:PlotSubArea/bwi/{cluster_name}_{plot_name}_{implementation}_{inv_year} ; :inYear {inv_year} . 
+target		d:StandSizeClass/bwi/{cluster_name}_{plot_name}_{implementation}_{inv_year} a :YoungStand ; :isStandSizeClassOf d:PlotSubForestVegetation/bwi/{cluster_name}_{plot_name}_{implementation}_{inv_year} ; :inYear {inv_year} . 
 source		select p.cluster_name, p.plot_name, p.implementation, p.inv_year, p.stand_development_phase 
 			from inventory_archive.plot p
 			join inventory_archive.cluster c

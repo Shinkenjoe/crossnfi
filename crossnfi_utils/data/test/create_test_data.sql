@@ -113,3 +113,60 @@ insert into test.plotsub values (1, 1, 4, 2022, 5, 1);
 insert into test.plotsub values (1, 1, 5, 2012, 1, null);
 insert into test.plotsub values (1, 1, 5, 2017, 1, null);
 insert into test.plotsub values (1, 1, 5, 2022, 2, null); 
+
+
+drop table if exists test.fiatree ;
+create table test.fiatree 
+       ( cluster_id1 bigint NOT NULL,
+         cluster_id2 bigint NOT NUlL, 
+         plot_id bigint NOT NULL,
+         tree_id bigint NOT NULL, 
+         test_year bigint NOT NULL, 
+         status_cd bigint NOT NULL, 
+         expected_id_use integer NOT NULL
+       );
+
+-- no dead tree
+insert into test.fiatree values (1, 1, 1, 1, 2012, 1, 0);
+insert into test.fiatree values (1, 1, 1, 1, 2017, 1, 0);
+insert into test.fiatree values (1, 1, 1, 1, 2022, 1, 0);
+
+-- only dead towards end
+insert into test.fiatree values (1, 1, 1, 2, 2012, 1, 0);
+insert into test.fiatree values (1, 1, 1, 2, 2017, 2, 0);
+insert into test.fiatree values (1, 1, 1, 2, 2022, 2, 0);
+
+-- dead in  between
+insert into test.fiatree values (1, 1, 1, 3, 2012, 1, 0);
+insert into test.fiatree values (1, 1, 1, 3, 2017, 2, 0);
+insert into test.fiatree values (1, 1, 1, 3, 2022, 1, 1);
+
+-- dead from the start 
+insert into test.fiatree values (1, 1, 1, 4, 2012, 2, 0);
+insert into test.fiatree values (1, 1, 1, 4, 2017, 2, 0);
+insert into test.fiatree values (1, 1, 1, 4, 2022, 2, 0);
+
+
+-- dead at start, then alive
+insert into test.fiatree values (1, 1, 1, 5, 2012, 2, 0);
+insert into test.fiatree values (1, 1, 1, 5, 2017, 1, 1);
+insert into test.fiatree values (1, 1, 1, 5, 2022, 1, 1);
+
+
+-- dead at start, alenating afterwards
+insert into test.fiatree values (1, 1, 1, 6, 2012, 2, 0);
+insert into test.fiatree values (1, 1, 1, 6, 2017, 1, 1);
+insert into test.fiatree values (1, 1, 1, 6, 2022, 2, 1);
+insert into test.fiatree values (1, 1, 1, 6, 2027, 1, 2);
+insert into test.fiatree values (1, 1, 1, 6, 2032, 2, 2);
+insert into test.fiatree values (1, 1, 1, 6, 2037, 1, 3);
+
+-- alive at start, alenating afterwards
+insert into test.fiatree values (1, 1, 1, 7, 2012, 1, 0);
+insert into test.fiatree values (1, 1, 1, 7, 2017, 2, 0);
+insert into test.fiatree values (1, 1, 1, 7, 2022, 1, 1);
+insert into test.fiatree values (1, 1, 1, 7, 2027, 2, 1);
+insert into test.fiatree values (1, 1, 1, 7, 2032, 1, 2);
+insert into test.fiatree values (1, 1, 1, 7, 2037, 2, 2);
+
+

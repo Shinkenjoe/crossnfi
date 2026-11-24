@@ -122,7 +122,7 @@ pub async fn template_identification(
 
     
     // create sql fragments for select clauses and joining conditions
-    let (cluster_plot, _join_plot, _) = 
+    let (cluster_plot, _join_plot, _, _) = 
         create_cluster_plot_sql_fragments(cluster_columns,plot_column);
 
     
@@ -312,7 +312,7 @@ pub async fn template_cluster_to_plot(
 /// identifying key. The relocation of a plot main area, thus the creation of a 
 /// new plot main area is marked by values (`relocation_codes`) a special column
 /// (`table_names.source_column`) takes, further on called relocation code. 
-/// the function  installs a column named `implementataion` in the table which is
+/// the function  installs a column named `implementation` in the table which is
 /// used as identifier for different plot main area implementing a plot template. 
 /// the plot dataset belonging to a plot template with the earliest inventory year
 /// gets dubbed as implementation '1'. When a relocation code appears,
@@ -338,7 +338,7 @@ pub async fn implementation_identification(
         .expect("no column for plot relocation codes given");
     let implementation = "implementation";
 
-    let (cluster_plot, join_plot, luy_join_plot) = 
+    let (cluster_plot, join_plot, luy_join_plot, _) = 
         create_cluster_plot_sql_fragments(cluster_columns,plot_column);
 
     // SQL list string to test for plot movement. Like "( 4 )" or "( 6, 7 )"
@@ -479,6 +479,142 @@ pub async fn implementation_identification(
     Ok(0)
 }
 
+/// for each identifier identify an event (eg a id reuse) by a column switching from 
+/// one set of values (eg tree dead status) to another set of values (eg tree alive status). 
+/// install a column where you give an cumulative count of the events that have happened
+/// the cluster plot combination is set in `table_names.cluster_names` as a `Vec<String>`, 
+/// the tree id is set in  `table_names.plot_name` field 
+/// the inventory_year_column is set in `table_names.year_column`  
+/// the column holding the codes where the edges are detected is the first elements
+/// of `table_names.source_columns`. 
+/// the column_name of the event cumulative count is the second element of 
+/// `table_names.source_columns`. 
+/// the SQL type of the year column is the third element of the `table_names.source_columns`
+#[allow(unused_variables)]
+pub async fn event_identification_by_code_edge<T>(    
+    client: &Client,
+    table_names: TableNames,
+    event_pre_codes: Vec<T>,
+    event_after_codes : Vec<T>)
+    -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>>
+    where T: std::fmt::Display + std::fmt::Debug + 
+          tokio_postgres::types::FromSqlOwned  + std::default::Default 
+          + std::convert::From<i32> + std::ops::Add<T, Output=T> + Copy
+          + PartialEq + Eq + PartialOrd + Ord 
+{
+        // explode table_names
+    let TableNames { 
+        schema_name : schema, 
+        table_name  : table, 
+        cluster_columns: plot_columns , 
+        plot_column: tree_column, 
+        year_column, 
+        source_columns } = table_names;
+    let year = year_column.expect("no year_column given");
+    let event_code_column = source_columns.get(0)
+        .expect("no column for event codes given");
+    let event_count_column = source_columns.get(1)
+        .expect("no column name for event count column given");
+
+    let (identifier, join_plot, luy_join_plot, id_select) = 
+        create_cluster_plot_sql_fragments(plot_columns.clone(), tree_column.clone());
+    let id_length = if tree_column.is_some() { 
+        1usize + plot_columns.len() 
+    } else { 
+       plot_columns.len()
+    };
+    
+    // SQL list string to test for plot movement. Like "( 4 )" or "( 6, 7 )"
+    if event_pre_codes.is_empty() {
+        return Err("no event pre-edge codes given".into()); 
+    }
+    if event_after_codes.is_empty() {
+        return Err("no event after-edge codes given".into()); 
+    }
+
+    let event_pre_codestring = create_status_code_tuples(&event_pre_codes)?;
+    let event_after_codestring = create_status_code_tuples(&event_after_codes)?;    
+    // drop and create the column for holding the implementations
+    let drop_query = format!(
+        "alter table {schema}.{table} 
+             drop column if exists {event_count_column};;");
+    client.execute(&drop_query, &[]).await?;
+    
+    let create_query = format!(
+        "alter table {schema}.{table} 
+             add column {event_count_column} integer;");
+    client.execute(&create_query, &[]).await?;
+    
+    // create a temporary column holding the year of the last event
+    // drop and create the column for holding the implementations
+    let event_year_drop_query = format!(
+        "alter table {schema}.{table} 
+             drop column if exists last_event;;");
+    client.execute(&drop_query, &[]).await?;
+    
+    let create_query = format!(
+        "alter table {schema}.{table} 
+             add column {event_count_column} integer;");
+    client.execute(&create_query, &[]).await?;
+    
+
+    let id_query = format!(
+        "
+         select distinct {identifier}
+         from {schema}.{table} m;");
+    let ids = client.query(&id_query, &[])
+        .await.expect("could not query for identifiers");
+    for row in ids {
+        let mut id_select_row = id_select.clone();
+        for i in 0..id_length {
+            id_select_row = id_select_row.replacen("{}", 
+                                                   &row.get::<usize, T>(i).to_string(), 
+                                                   1);
+        }                        
+        let id_select_row_unabbreviated = id_select_row.replace("m.", "");
+        let tree_records_query = format!("
+           select {identifier}, {year}, {event_code_column}
+           from {schema}.{table} m
+           where \n {id_select_row} 
+           order by {identifier}, {year};
+           ");
+        let tree_records = client.query(&tree_records_query, &[]).await?;
+
+        let mut initial = true;
+        let mut previous_status : T = T::default();
+        let mut current_status : T;
+        let mut last_event_year : T;
+        let mut current_year : T;
+        let mut id_use : i32 = 0;
+        for record in tree_records {
+            if initial {
+                previous_status = record.get(id_length + 1);
+                last_event_year = record.get(id_length);
+                current_year = last_event_year;
+                initial = false;                            
+            } else {
+                current_year = record.get(id_length);
+                current_status = record.get(id_length + 1);
+                if event_pre_codes.contains(&previous_status) && 
+                    event_after_codes.contains(&current_status) {                        
+                        id_use = id_use + 1;
+                }
+                previous_status = current_status;
+            }
+            let update_query = format!("
+                update {schema}.{table}
+                set {event_count_column} = {id_use} 
+                where {id_select_row_unabbreviated}and {year} = {current_year};\n");          
+            client.execute(&update_query, &[]).await?;
+        }
+    }
+    
+
+
+    Ok(())
+}
+
+
 
 /// for the cluster and plot combo we create a comma seperated string to inject 
 /// into the select and group by clauses. 
@@ -489,12 +625,15 @@ pub async fn implementation_identification(
 /// is abbreviated by 'o'
 fn create_cluster_plot_sql_fragments(cluster_columns: Vec<String>, 
                                      plot_column : Option<String>, 
-) -> (String, String, String) {
+) -> (String, String, String, String) {
     
     let mut cluster_plot = String::new();
     let mut join_plot = String::new();
     let mut luy_join_plot = String::new();    
+    let mut id_select = String::new();
+    
     for name in cluster_columns.iter() {
+        id_select.push_str(format!("m.{} = {{}} and\n", name).as_str());
         let name_string = format!(" m.{} ,", name);
         cluster_plot.push_str(&name_string);
         let eq_string = format!("m.{0} = o.{0} and\n", name);
@@ -504,6 +643,7 @@ fn create_cluster_plot_sql_fragments(cluster_columns: Vec<String>,
 
     }
     if let Some(plot_name) = plot_column {
+        id_select.push_str(format!("m.{} = {{}}\n", plot_name).as_str());
         let plot_string = format!(" m.{} ", plot_name);
         cluster_plot.push_str(&plot_string);        
         let eq_string = format!(" m.{0} = o.{0} ", plot_name);
@@ -525,8 +665,14 @@ fn create_cluster_plot_sql_fragments(cluster_columns: Vec<String>,
         luy_join_plot.pop();
         luy_join_plot.pop();
         luy_join_plot.push('\n');
+        id_select.pop();
+        id_select.pop();
+        id_select.pop();
+        id_select.pop();
+        id_select.push('\n');
+
     }
-    (cluster_plot, join_plot, luy_join_plot)
+    (cluster_plot, join_plot, luy_join_plot, id_select)
 }
 
 
@@ -616,7 +762,7 @@ where T: FromSqlOwned + std::fmt::Display + PartialEq<T> + Copy {
     let nonsampled = create_status_code_tuples(&nonsampled_codes)?;
     
     // cluster and plot sql fragments for joining 
-    let (cluster_plot, join_plot, _) = create_cluster_plot_sql_fragments(
+    let (cluster_plot, join_plot, _, _) = create_cluster_plot_sql_fragments(
         cluster_columns.clone(), plot_column.clone());
 
     
@@ -904,8 +1050,8 @@ mod tests {
                                    "COUNTYCD".to_string(), 
                                    "PLOT".to_string()];
         let plot_column = Some("SUBP".to_string());
-        let (cluster_plot, join_plot, luy_join_plot) = create_cluster_plot_sql_fragments(
-            cluster_columns, plot_column);
+        let (cluster_plot, join_plot, luy_join_plot, id_select) = 
+            create_cluster_plot_sql_fragments(cluster_columns, plot_column);
         
         let exp_cluster_plot = " m.STATECD , m.UNITCD , m.COUNTYCD , m.PLOT , m.SUBP ";
         let exp_join_plot = "m.STATECD = o.STATECD and
@@ -919,11 +1065,17 @@ m.UNITCD = luy.UNITCD and
 m.COUNTYCD = luy.COUNTYCD and
 m.PLOT = luy.PLOT and
  m.SUBP = luy.SUBP ";
+        let exp_id_select = "m.STATECD = {} and
+m.UNITCD = {} and
+m.COUNTYCD = {} and
+m.PLOT = {} and
+m.SUBP = {}
+";
 
         assert_eq!(cluster_plot, exp_cluster_plot);
         assert_eq!(join_plot, exp_join_plot);
         assert_eq!(luy_join_plot, exp_luy_join_plot);
-
+        assert_eq!(id_select, exp_id_select);
     }
 
     #[rstest]
@@ -1036,8 +1188,36 @@ m.PLOT = luy.PLOT and
             let deriv : Option<i64> = row.try_get(1).expect("deriv in test could not be found");     
             assert_eq!(orig, deriv);            
         }
-
-
     }
 
+    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn test_identify_tree_id_use(
+        connect_testdb : impl Future<Output=Client>) {
+        let client = connect_testdb.await;
+        let table_names = TableNames { 
+            schema_name: "test".to_string(), 
+            table_name: "fiatree".to_string(), 
+            cluster_columns: vec!["cluster_id1".to_string(), "cluster_id2".to_string(), 
+            "plot_id".to_string()], 
+            plot_column: Some("tree_id".to_string()), 
+            year_column: Some("test_year".to_string()),
+            source_columns: vec!["status_cd".to_string(), "id_use".to_string()],
+        };
+        let dead_codes = vec![2 as i64];
+        let alive_codes = vec![1 as i64];
+        event_identification_by_code_edge(&client, table_names,
+                                          dead_codes, alive_codes).await.unwrap();
+        let rows = client.query(
+            "select id_use, expected_id_use
+             from test.fiatree;", &[])
+        .await.expect("could not query test db after col creation");        
+        for row in rows {
+            let orig : Option<i32> = row.try_get(0)
+                .expect("orig in test could not be found");
+            let deriv : Option<i32> = row.try_get(1)
+                .expect("deriv in test could not be found");     
+            assert_eq!(orig, deriv);            
+        }
+    }
 }

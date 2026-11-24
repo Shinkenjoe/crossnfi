@@ -55,16 +55,6 @@ skos:prefLabel rdf:type owl:AnnotationProperty ;
                rdfs:subPropertyOf rdfs:label .
 
 
-###  https://www.easi.uni-bayreuth.de/crossnfi#def
-:def rdf:type owl:AnnotationProperty ;
-     rdfs:label "def"@en .
-
-
-###  https://www.easi.uni-bayreuth.de/crossnfi#pref
-:pref rdf:type owl:AnnotationProperty ;
-      rdfs:label "pref"@en .
-
-
 #################################################################
 #    Object Properties
 #################################################################
@@ -352,13 +342,26 @@ entities for which there is data to be found at a plot. These entities are sampl
                            "tiene uso del suelo"@es .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#hasMaxDBH
+:hasMaxDBH rdf:type owl:ObjectProperty ;
+           rdfs:subPropertyOf :hasQuality ;
+           rdfs:domain :Sample ;
+           rdfs:range :DBH ;
+           skos:definition "relates a sample of Trees to the DBH maximum requirements which member trees must satisfy."@en ;
+           skos:prefLabel "has maximum DBH"@en ,
+                          "hat Maximum-BHD"@de ,
+                          "tiene DAP maxima"@es .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#hasMinDBH
 :hasMinDBH rdf:type owl:ObjectProperty ;
            rdfs:subPropertyOf :hasQuality ;
+           rdfs:domain :Sample ;
+           rdfs:range :DBH ;
            rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
-           skos:definition "relates a sample of Trees above"@en ;
+           skos:definition "relates a sample of Trees to the DBH minimum requirements that member trees must satisfy."@en ;
            skos:prefLabel "has minimum DBH"@en ,
-                          "hat Mindest-BHD"@de ,
+                          "hat Minimum BHD"@de ,
                           "tiene DAP  mínima"@es .
 
 
@@ -762,6 +765,17 @@ geo:SpatialObject rdf:type owl:Class ;
                   skos:note "Arable land, grasslands, horticulture"@en .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#Alive
+:Alive rdf:type owl:Class ;
+       rdfs:subClassOf :VitalStatus ;
+       skos:definition """an alive tree, defined as by NFI specific criteria. 
+
+Life is the capacity in matter, formed of one or more units called cells, for processes such as cell signalling, homeostasis, metabolism, cell growth, adaptation, response to stimuli, and reproduction. All life eventually reaches a state of death. (Wikipedia)"""@en ;
+       skos:prefLabel "alive"@en ,
+                      "lebend"@de ,
+                      "vivo"@es .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#AngleCount
 :AngleCount rdf:type owl:Class ;
             rdfs:subClassOf :Quantity ;
@@ -828,7 +842,7 @@ TODO: It would be better to integrate the count of a certain basal area factor a
                   skos:definition "A set of trees that is assigned to a central point by satisfying a certain diameter-distance requiremement. An Angle Count Sample is attributed by a basal area factor (BAF). A tree belongs to the Angle Count Sample, if and only if the relation of its diameter at breast height (in cm)  to its distance to the central point (in m) surpasses a minimum relation constant,  which corresponds to the basal area factor (eg. BAF 4 m² has the relation of ¹/₂₅)"@en ;
                   skos:note """Often the trees in the sample are not rerred to individually but just counted, most often distuished by species. A count is refered to by the property 'cnfi:hasCount' and notes the corresponding species. For some angle count samples though the individual trees are recorded.
 
-The count of trees in an angle count sample is in a statistical relationship with the basal area of a fixed sample circle with the same central point and is thus used as an approximation to the basal area. The counting factor corresponds to the base area in m² added by a single tree falling into the angle count sample. The counting factors of 1 m², 2 m² and 4 m² are common.
+The count of trees in an angle count sample is in a statistical relationship with the basal area of a fixed sample circle with the same central point and is thus used as an approximation to the basal area. In countries with using the metric system the counting factor corresponds to the basal area in m² added by a single tree falling into the angle count sample. The counting factors of 1 m², 2 m² and 4 m² are common.
 
 Forest and Stand borders in the sample tree's and/or central point's vicinity are used for the reflection computation. This is a computational procedure, which reflects the sample tree's base areas on the aforementioned borders. Would the diameter of such a reflected tree  in combination with the refleæction's distance to the central point sufficeto fall into the ideal sample circle, then the preimage tree is counted twice in the sample."""@en ;
                   skos:prefLabel "Winkelzählprobe"@de ,
@@ -920,7 +934,7 @@ macroplot"""@en ;
                 rdfs:subClassOf :Quality ,
                                 [ rdf:type owl:Restriction ;
                                   owl:onProperty :classifies ;
-                                  owl:someValuesFrom :PlotArea
+                                  owl:someValuesFrom owl:Thing
                                 ] ;
                 dcterms:description """The classification is  dependent on some quality not directly measured, but assesed 
 by the inventory team. Thus a classification can be interpreted as a quality for which the value space has been partitioned into several subsets of the correspondent value
@@ -1016,18 +1030,38 @@ For the US FIA the cluster area set is the main class dealing with the event and
          skos:definition "Conifers are primarily perennial, woody trees, mostly evergreen and mostly with needle shaped leaves,  having a regular branching pattern, reproducing with male and female cones, usually on the same tree."@en .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#CriteriaChangeInvalid
+:CriteriaChangeInvalid rdf:type owl:Class ;
+                       rdfs:subClassOf :InvalidTree ;
+                       skos:altLabel "procedural change"@en ;
+                       skos:prefLabel "a tree, which is eligible no more, because the inventories's sampling requirements changed"@en ,
+                                      "cambio de criterios - inválido"@es ,
+                                      "Änderung der Kriterien - ungültig"@de ,
+                                      "criteria change - invalid" .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#CriteriaChangeValid
+:CriteriaChangeValid rdf:type owl:Class ;
+                     rdfs:subClassOf :SampleTree ;
+                     skos:prefLabel "a tree which was present and  not sampled in the previous inventory cyvle because it was non eligible back then, but is eligible in this inventory cycle cause of a change in the sampling criterias"@en ,
+                                    "cambio de criterios  - válido"@es ,
+                                    "criteria change - valid"@en ,
+                                    "Änderung der Kriterien - gültig"@de .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#DBH
 :DBH rdf:type owl:Class ;
      rdfs:subClassOf :Quantity ;
      rdfs:isDefinedBy <https://www.easi.uni-bayreuth.de/crossnfi> ;
      rdfs:seeAlso "Tomppo E et al 2010, National Forest Inventories: Pathways for Common Reporting, Appendix" ;
+     skos:altLabel "diámetro a la altura de pecho (DAP)"@es ;
      skos:definition "The breast height of a tree is located at 1.3 m from the base point of the axis of the stem."@en ;
      skos:note """Instances are related by ´qudt:hasUnit' to a ´qudt:Unit´, which ´qudt:hasQuantityKind´ ´qudt:Length´. This usually is ´unit:M´, ´unit:CM´, ´unit:FT´, ´unit:YD´ or ´unit:IN´. 
 
 Tomppo et al base point: On level terrain the base point is the point resulting from the intersection  of the stem axis and the ground surface. On sloped terrain and on inclined trees the identification of the base point requires the previous identification of an  an intersection point. This intersection point is the highest point on the cross sectional  area that results from the intersection of the ground surface with the stem. A line through the intersection point and perpendicular to the stem axis yields the base point in these  cases.""" ;
      skos:prefLabel "Brusthöhendurchmesser (BHD)"@de ,
                     "diameter at breast height (DBH)"@en ,
-                    "diámetro a la altura de pecho (DAP)"@es .
+                    "diámetro normal (DN)"@es .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#DRC
@@ -1055,6 +1089,11 @@ For multi-stemmed trees, d.r.c. is calculated from an equation that incorporates
                                "data collection"@en .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#Dead
+:Dead rdf:type owl:Class ;
+      rdfs:subClassOf :VitalStatus .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#Developed
 :Developed rdf:type owl:Class ;
            rdfs:subClassOf :Nonforest ;
@@ -1063,6 +1102,20 @@ For multi-stemmed trees, d.r.c. is calculated from an equation that incorporates
            skos:prefLabel "Siedlungsfläche"@de ,
                           "developed area"@en ,
                           "uso artificial"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#DiameterGroup
+:DiameterGroup rdf:type owl:Class ;
+               rdfs:subClassOf :TreeClassification .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#DiscardedTree
+:DiscardedTree rdf:type owl:Class ;
+               rdfs:subClassOf :TreeSamplingStatus ;
+               skos:definition "a tree which was part of the previous inventory cycle, but has been removed or is dead long enough to not be eligible for sampling."@en ;
+               skos:prefLabel "discarded tree"@en ,
+                              "árbol desechado"@es ,
+                              "ausgeschiedener Baum" .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#Distance
@@ -1080,7 +1133,10 @@ For multi-stemmed trees, d.r.c. is calculated from an equation that incorporates
 ###  https://www.easi.uni-bayreuth.de/crossnfi#FixedCircleSample
 :FixedCircleSample rdf:type owl:Class ;
                    rdfs:subClassOf :SampleOfTreesOfMinDiameter ;
-                   rdfs:label "FixedCircleSample"@en .
+                   skos:definition "a sample taken from a circle shaped area"@en ;
+                   skos:prefLabel "Probe mit festem Probekreis"@de ,
+                                  "fixed circle sample"@en ,
+                                  "muestra de circulo fijado"@es .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#Forest
@@ -1179,6 +1235,15 @@ German non-stocked forest area is excluded, although it would partly be included
                               "menschliche Aktitvität"@de .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#Ingrowth
+:Ingrowth rdf:type owl:Class ;
+          rdfs:subClassOf :SampleTree ;
+          skos:definition "a sample tree not sampled in the previous inventory cycle, either because it was present, but didn't meet the sample's dimension criteria (ingrowth proper) or because it seminated and grew into the sample during the inventory interval (throughgrowth)."@en ,
+                          "incorporación"@es ,
+                          "ingrowth"@en ,
+                          "Einwuchs" .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#InvalidCluster
 :InvalidCluster rdf:type owl:Class ;
                 rdfs:subClassOf :NonSampledCluster ;
@@ -1201,6 +1266,15 @@ German non-stocked forest area is excluded, although it would partly be included
              skos:prefLabel "invalid"@en ,
                             "inválido"@es ,
                             "ungültig"@de .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#InvalidTree
+:InvalidTree rdf:type owl:Class ;
+             rdfs:subClassOf :TreeSamplingStatus ;
+             skos:definition "an alive Tree which was sampled in a previous cyvle but is not eligible for sampling in this cycle."@en ;
+             skos:prefLabel "invalid tree"@en ,
+                            "ungültiger Baum"@de ,
+                            "árbol inválido"@es .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#InventoryArea
@@ -1236,6 +1310,24 @@ German non-stocked forest area is excluded, although it would partly be included
                         "uso del suelo"@es .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#LandUseChangeInvalid
+:LandUseChangeInvalid rdf:type owl:Class ;
+                      rdfs:subClassOf :InvalidTree ;
+                      skos:prefLabel "Landnutzungsändernung - ungültig"@de ,
+                                     "a tree is not sampled anymore, because it is assigned to a nonforest plot subarea in this inventory cycle, while it was assigned to a forest plot subarea in the previous cycle."@en ,
+                                     "cambio de uso de suelo - invalido"@es ,
+                                     "land use change - invalid"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#LandUseChangeValid
+:LandUseChangeValid rdf:type owl:Class ;
+                    rdfs:subClassOf :SampleTree ;
+                    skos:definition "Landnutzungsänderung - gültig"@de ,
+                                    "a tree was not sampled in the previous inventory cylcle because it was assigned to a nonforest plot subarea,  but it is sampled in this cycle because it is assigned to a forest plot subarea."@en ,
+                                    "cambio de uso de suelo - válido"@es ,
+                                    "land use change - valid"@en .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#MapSubarea
 :MapSubarea rdf:type owl:Class ;
             rdfs:subClassOf :TotalArea ;
@@ -1244,6 +1336,25 @@ German non-stocked forest area is excluded, although it would partly be included
                             "subárea de una mapa"@es ;
             skos:prefLabel "Karten-Teilfläche"@de ,
                            "map subarea"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#Mature
+:Mature rdf:type owl:Class ;
+        rdfs:subClassOf :PoleToMature ;
+        skos:altLabel "sawtimber"@en ;
+        skos:definition "a tree satisfying the NFI specific minimum and maximum dimension requirements for mature trees."@en ;
+        skos:prefLabel "Baumholz"@de ,
+                       "fustal"@es ,
+                       "mature tree"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#MediumSawtimber
+:MediumSawtimber rdf:type owl:Class ;
+                 rdfs:subClassOf :Mature ;
+                 skos:definition "a tree satisfying NFI specific minimum and maximum dimension requirements for medium sized saw timber."@en ;
+                 skos:prefLabel "fustal medio"@es ,
+                                "medium sawtimber"@en ,
+                                "mittleres Baumholz"@de .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#MunicipalOwner
@@ -1808,6 +1919,23 @@ Thus it does not meet the criteria for forest vegetation, but did so in the past
                                                         "vegetation on a temporary non-stocked forest plot subarea"@en .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#Pole
+:Pole rdf:type owl:Class ;
+      rdfs:subClassOf :PoleToMature ;
+      skos:definition "a tree satisfying minimum and maximum dimension requirements for pole."@en ;
+      skos:prefLabel "Stangenholz"@de ,
+                     "latizal"@es ,
+                     "pole"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#PoleToMature
+:PoleToMature rdf:type owl:Class ;
+              rdfs:subClassOf :DiameterGroup ;
+              rdfs:label "Derbholz"@de ,
+                         "pole to mature"@en ;
+              skos:definition "An teenage to mature tree which has surpassed an NFI specific dimension criteria of minimum dimension"@en .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#Position
 :Position rdf:type owl:Class ;
           rdfs:subClassOf geo:Geometry ;
@@ -1901,6 +2029,18 @@ Thus it does not meet the criteria for forest vegetation, but did so in the past
                                                "reference position relocated"@en .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#Regeneration
+:Regeneration rdf:type owl:Class ;
+              rdfs:subClassOf :DiameterGroup ;
+              skos:definition "a very young tree which has not surpassed NFI specifiic requirements of maximum dimension."@en ;
+              skos:note """Maximum requirements :
+- 7 cm DBH  (BWI) 
+-  5 in (~12 cm) DBH (FIA)"""@en ;
+              skos:prefLabel "Verjüngung"@de ,
+                             "regeneración"@es ,
+                             "regeneration" .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#Region
 :Region rdf:type owl:Class ;
         rdfs:subClassOf geo:Feature ,
@@ -1919,6 +2059,15 @@ Thus it does not meet the criteria for forest vegetation, but did so in the past
         skos:prefLabel "Gebiet"@de ,
                        "region"@en ,
                        "región"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#RemeasueredTree
+:RemeasueredTree rdf:type owl:Class ;
+                 rdfs:subClassOf :SampleTree ;
+                 skos:prefLabel "a sample tree which was also sampled in the previous inventory cycle"@en ,
+                                "remeasured tree"@en ,
+                                "wiederholt gemessener Baum"@de ,
+                                "árbol remuestrado"@es .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#Sample
@@ -1975,6 +2124,19 @@ Thus it does not meet the criteria for forest vegetation, but did so in the past
                                            "sample of trees of minimum diameter"@en .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#SampleTree
+:SampleTree rdf:type owl:Class ;
+            rdfs:subClassOf :TreeSamplingStatus ;
+            skos:altLabel "tally tree"@en ;
+            skos:definition "a tree which was sampled in this inventory cycle"@en ;
+            skos:note """Trees in this category get most ol the samples a live sample tree gets. In the German BWI recently died trees are also sampled full in others all standing dead trees get diameter and heigth measurements (or estimates)
+
+If  death related classifications are noted and a very reduced set of measurements are taken, or if the sampling process for general dead wood / down woody material is applied, the tree is classified as discarded tree."""@en ;
+            skos:prefLabel "Probebaum"@en ,
+                           "sample tree"@en ,
+                           "árbol muestrado"@es .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#SampledCluster
 :SampledCluster rdf:type owl:Class ;
                 rdfs:subClassOf :ClusterAreaSetSamplingStatus ;
@@ -2029,6 +2191,62 @@ Thus it does not meet the criteria for forest vegetation, but did so in the past
                        skos:prefLabel "aufgenommen mit Wald"@de ,
                                       "muestreado con bosque"@es ,
                                       "sampled with forest"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#SamplingErrorInvalid
+:SamplingErrorInvalid rdf:type owl:Class ;
+                      rdfs:subClassOf :InvalidTree ;
+                      skos:altLabel "cruiser error"@en ;
+                      skos:definition "a tree which was sampled in the previous inventory cycle, but was actually not eligible for sampling"@en ;
+                      skos:prefLabel "Aufnahmefehler - ungültig"@de ,
+                                     "error de muestreo - inválido"@es ,
+                                     "sampling error - invalid"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#SamplingErrorValid
+:SamplingErrorValid rdf:type owl:Class ;
+                    rdfs:subClassOf :SampleTree ;
+                    skos:definition "a tree which was present and  not sampled in the previous inventory cyvle, but should have been sampled, and is samplen in this inventory cycle."@en ;
+                    skos:prefLabel "Aufnahmefehler - gültig"@de ,
+                                   "error de muestreo - válido"@es ,
+                                   "sampling error - valid"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#Sapling
+:Sapling rdf:type owl:Class ;
+         rdfs:subClassOf :Regeneration ;
+         skos:definition "A young tree which has surpassed NFI specific minimum dimension requirements and not surpassed NFI specifc maximum criteria."@en ,
+                         "Schössling"@de ,
+                         "arbolito"@es ,
+                         "sapling"@en ;
+         skos:note """Minimum requirements: 
+  - 2,54cm DBH (FIA)
+  - 20 cm height (BWI)) 
+
+Maximum requirements :
+- 7 cm DBH  (BWI) 
+-  5 in (~12 cm) DBH (FIA)"""@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#Seedling
+:Seedling rdf:type owl:Class ;
+          rdfs:subClassOf :Regeneration ;
+          skos:definition "a very young tree which has not surpassed NFI specific mininimum dimension criteria"@en ;
+          skos:note """Maximum requirements: 
+  - 2,54cm DBH (FIA)
+  - 20 cm height (BWI))""" ;
+          skos:prefLabel "Sämling"@de ,
+                         "plántula"@es ,
+                         "seedling"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#ShrankOrMoved
+:ShrankOrMoved rdf:type owl:Class ;
+               rdfs:subClassOf :InvalidTree ;
+               skos:definition "a tree which was eligible in the previous inventory cycle, but is no more cause of either decreasing dimension (eg damage events) or increased distance (eg earth movements)."@en ;
+               skos:prefLabel "disminuido o movido"@es ,
+                              "geschrumpft oder bewegt"@de ,
+                              "shrank or moved"@en .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#Shrub
@@ -2098,6 +2316,15 @@ An NFI can choose to assign plots to  strata in 2 ways:
              skos:prefLabel "Stratumsfläche"@de ,
                             "stratum area"@en ,
                             "área de estrato"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#StrongSawtimber
+:StrongSawtimber rdf:type owl:Class ;
+                 rdfs:subClassOf :Mature ;
+                 skos:definition "a tree satisfying NFI specific minimum and maximum dimension requirements for strong sized saw timber."@en ;
+                 skos:prefLabel "fustal alto"@es ,
+                                "starkes Baumholz"@de ,
+                                "strong sawtimber"@de .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#TemplateCluster
@@ -2258,9 +2485,21 @@ Spanish IFN:  forest trees stocking on an area of which they cover at least 10 %
       rdfs:isDefinedBy "FAO  Forest Resource Assement - Terms and Definitions"@en ;
       rdfs:seeAlso <https://www.fao.org/forest-resources-assessment/en/> ;
       skos:definition "A woody perennial with a single main stem, or in the case of coppice with several stems, having a more or less definite crown."@en ;
-      skos:note "árbol"@es ;
       skos:prefLabel "Baum"@de ,
-                     "tree"@en .
+                     "tree"@en ,
+                     "árbol"@es .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#TreeClassification
+:TreeClassification rdf:type owl:Class ;
+                    rdfs:subClassOf :Classification ,
+                                    [ rdf:type owl:Restriction ;
+                                      owl:onProperty :classifies ;
+                                      owl:someValuesFrom :Tree
+                                    ] ;
+                    skos:prefLabel "Klassifikation eines Baumes"@de ,
+                                   "clasificacíon de un arból"@es ,
+                                   "classification of a tree"@en .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#TreeHeight
@@ -2277,6 +2516,15 @@ Tomppo et al base point: On level terrain the base point is the point resulting 
                            "tree height"@en .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#TreeSamplingStatus
+:TreeSamplingStatus rdf:type owl:Class ;
+                    rdfs:subClassOf :TreeClassification ;
+                    skos:prefLabel "Probestatus"@de ,
+                                   "estado de muestreo"@es ,
+                                   "sampling status"@en ,
+                                   "sampling status of a tree in an inventory cycle"@en .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#Vegetation
 :Vegetation rdf:type owl:Class ;
             rdfs:subClassOf [ rdf:type owl:Restriction ;
@@ -2291,6 +2539,28 @@ Tomppo et al base point: On level terrain the base point is the point resulting 
                            "vegetation"@en .
 
 
+###  https://www.easi.uni-bayreuth.de/crossnfi#Veteran
+:Veteran rdf:type owl:Class ;
+         rdfs:subClassOf :Mature ;
+         skos:definition "a tree satisfying NFI specific minimum and maximum dimension requirements for veteran."@en ;
+         skos:prefLabel "starkes Baumholz"@de ,
+                        "veteran"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#VitalStatus
+:VitalStatus rdf:type owl:Class ;
+             rdfs:subClassOf :TreeClassification ;
+             skos:note """there are NFI specific criteria for vital status
+
+In the US FIA trees count as alive if they have any living parts (leaves, buds, cambium) at or above the point of diameter measurement, either diameter at breast height (DBH) or diameter at root collar (DRC) depending on species. Trees that have been temporarily defoliated are still alive. If all stems of a previously tallied woodland tree were killed, cut or removed and there are new sprouts at the base, the previously tallied tree is treated as dead and the new sprouts (1.0-inch DRC and larger) as part of a new tree. 
+
+The German BWI measures every tree alive or having died in the last 12 months. The last condition is noted down. Concrete defininitions for alive or dead are not given."""@en ;
+             skos:prefLabel "Vitalstatus"@de ,
+                            "estado vital"@es ,
+                            "the condition of a tree being alive or dead"@en ,
+                            "vital status"@en .
+
+
 ###  https://www.easi.uni-bayreuth.de/crossnfi#WaterBody
 :WaterBody rdf:type owl:Class ;
            rdfs:subClassOf :Nonforest ;
@@ -2300,6 +2570,15 @@ Tomppo et al base point: On level terrain the base point is the point resulting 
            skos:prefLabel "Gewässer"@de ,
                           "agua"@en ,
                           "water body"@en .
+
+
+###  https://www.easi.uni-bayreuth.de/crossnfi#WeakSawtimber
+:WeakSawtimber rdf:type owl:Class ;
+               rdfs:subClassOf :Mature ;
+               skos:definition "a tree satisfying NFI specific minimum and maximum dimension requirements for weak sized saw timber." ;
+               skos:prefLabel "fustal bajo"@es ,
+                              "schwaches Baumholz"@de ,
+                              "weak sawtimber"@en .
 
 
 ###  https://www.easi.uni-bayreuth.de/crossnfi#Wetlands
@@ -2321,9 +2600,9 @@ Tomppo et al base point: On level terrain the base point is the point resulting 
             skos:note """For the German BWI and the Spanish IFN the border value is at 20 cm, for the US FIA it lies at 9 in = 22.86 cm for softwoods (conifers) and woodland trees and at 11 in = 27.94 cm for hardwoods
 
 The Spanish IFN and the US FIA have  a finer classification, but the German BWI uses this broad class"""@en ,
-                      "Jungbestand"@de ,
-                      "bosque joven"@es ,
-                      "young stand"@en .
+                      "bosque joven"@es ;
+            skos:prefLabel "Jungbestand"@de ,
+                           "young stand"@en .
 
 
 #################################################################
